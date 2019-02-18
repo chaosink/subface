@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+
+# Build
+/build*
+
+# CLion
+/cmake-build-debug
+/cmake-build-release
+/.idea
+
+# Release
+/release
+
+# Model
+/model
