@@ -66,7 +66,8 @@ glm::mat4 Camera::Update(double time) {
 
 	float turn_speed = turn_speed_;
 	float move_speed = move_speed_;
-	if(glfwGetKey(window_, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+	if(glfwGetKey(window_, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS
+	|| glfwGetKey(window_, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS) {
 		turn_speed *= 0.1f;
 		move_speed *= 0.1f;
 	}
@@ -130,6 +131,7 @@ glm::mat4 Camera::Update(double time) {
 		turn_speed_ *= 1.1f;
 	if(glfwGetKey(window_, GLFW_KEY_LEFT_BRACKET ) == GLFW_PRESS)
 		turn_speed_ *= 0.9f;
+
 	if(glfwGetKey(window_, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		position_ = position_init_;
 		angle_horizontal_ = angle_horizontal_init_;

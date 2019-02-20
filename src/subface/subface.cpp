@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 	ogl.Normal(ls.normal_flat());
 
 	Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
-	int render_mode = 0;
+	int render_mode = 2;
 	Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
 	Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
 	Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
