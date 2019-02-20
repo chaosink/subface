@@ -7,6 +7,8 @@ using namespace std;
 #include "Camera.hpp"
 #include "FPS.hpp"
 #include "Model.hpp"
+#include "LoopSubface.hpp"
+using namespace subface;
 
 int main(int argc, char *argv[]) {
 	if(argc < 2) {
@@ -23,6 +25,10 @@ int main(int argc, char *argv[]) {
 	Model model(ogl.window(), argv[1]);
 	ogl.Vertex(model.vertex());
 	ogl.Normal(model.normal());
+
+	LoopSubface ls;
+	ls.BuildTopology(model.indexed_vertex(), model.index());
+	ls.Subdivide(1);
 
 	Toggle render_mode(ogl.window(), GLFW_KEY_TAB, false);
 

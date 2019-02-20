@@ -14,6 +14,8 @@ class Model {
 	std::vector<glm::vec3> vertex_;
 	std::vector<glm::vec3> normal_;
 	std::vector<glm::vec2> uv_;
+	std::vector<glm::vec3> indexed_vertex_;
+	std::vector<int> index_;
 
 public:
 	Model(GLFWwindow *window, const char *file_name);
@@ -29,6 +31,12 @@ public:
 	}
 	std::vector<glm::vec2>& uv() {
 		return uv_;
+	}
+	std::vector<glm::vec3>& indexed_vertex() {
+		return indexed_vertex_;
+	}
+	std::vector<int>& index() {
+		return index_;
 	}
 	glm::mat4 Update(double time);
 };

@@ -19,6 +19,7 @@ Model::Model(GLFWwindow *window, const char *file_name) : window_(window) {
 	vertex_.resize(n_vertex_);
 	normal_.resize(n_vertex_);
 	uv_.resize(n_vertex_);
+	index_.resize(n_vertex_);
 
 	int i = 0;
 	for (size_t s = 0; s < shapes.size(); s++) {
@@ -41,11 +42,23 @@ Model::Model(GLFWwindow *window, const char *file_name) : window_(window) {
 				// tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];
 				// tinyobj::real_t green = attrib.colors[3*idx.vertex_index+1];
 				// tinyobj::real_t blue = attrib.colors[3*idx.vertex_index+2];
+
+				index_[i] = idx.vertex_index;
 				i++;
 			}
 			index_offset += fv;
 		}
 	}
+
+	indexed_vertex_.resize(attrib.vertices.size() / 3);
+	for(size_t i = 0; i < attrib.vertices.size() / 3; ++i) {
+		indexed_vertex_[i] = glm::vec3(
+			attrib.vertices[i * 3 + 0],
+			attrib.vertices[i * 3 + 1],
+			attrib.vertices[i * 3 + 2]
+		);
+	}
+
 	printf("Model loaded. Number of faces: %d. Number of vertices: %d\n", n_vertex_ / 3, n_vertex_);
 }
 

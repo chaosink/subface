@@ -10,6 +10,9 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_WARNINGS} -fvisibility-inlines-hidden -O3")
 endif()
 
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+
 include_directories(
 	src/core
 	src/utility
@@ -20,6 +23,10 @@ include_directories(
 	${OPENGL_INCLUDE_DIR}
 )
 
+add_library(core
+	src/core/Subface.cpp
+	src/core/LoopSubface.cpp
+)
 add_executable(subface
 	src/subface/subface.cpp
 	src/utility/Camera.cpp
@@ -29,6 +36,7 @@ add_executable(subface
 	src/utility/Model.cpp
 )
 target_link_libraries(subface
+	core
 	glew_s
 	glfw
 )
