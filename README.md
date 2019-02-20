@@ -44,52 +44,52 @@ key | function
 
 * original mesh, faces
 
-![level-0_face.png](./result/level-0_face.png)
+![suzanne_level-0_face.png](./result/suzanne_level-0_face.png)
 
 * original mesh, wireframe with face culling
 
-![level-0_wireframe_cull-face.png](./result/level-0_wireframe_cull-face.png)
+![suzanne_level-0_wireframe_cull-face.png](./result/suzanne_level-0_wireframe_cull-face.png)
 
 * original mesh, wireframe without face culling
 
-![level-0_wireframe_no-cull-face.png](./result/level-0_wireframe_no-cull-face.png)
+![suzanne_level-0_wireframe_no-cull-face.png](./result/suzanne_level-0_wireframe_no-cull-face.png)
 
 * original mesh, flat
 
-![level-0_flat.png](./result/level-0_flat.png)
+![suzanne_level-0_flat.png](./result/suzanne_level-0_flat.png)
 
 * original mesh, smooth
 
-![level-0_smooth.png](./result/level-0_smooth.png)
+![suzanne_level-0_smooth.png](./result/suzanne_level-0_smooth.png)
 
 * level 1, flat
 
-![level-1_flat.png](./result/level-1_flat.png)
+![suzanne_level-1_flat.png](./result/suzanne_level-1_flat.png)
 
 * level 1, smooth
 
-![level-1_smooth.png](./result/level-1_smooth.png)
+![suzanne_level-1_smooth.png](./result/suzanne_level-1_smooth.png)
 
 * level 2, flat
 
-![level-2_flat.png](./result/level-2_flat.png)
+![suzanne_level-2_flat.png](./result/suzanne_level-2_flat.png)
 
 * level 2, smooth
 
-![level-2_smooth.png](./result/level-2_smooth.png)
+![suzanne_level-2_smooth.png](./result/suzanne_level-2_smooth.png)
 
 * level 3, flat
 
-![level-3_flat.png](./result/level-3_flat.png)
+![suzanne_level-3_flat.png](./result/suzanne_level-3_flat.png)
 
 * level 3, smooth
 
-![level-3_smooth.png](./result/level-3_smooth.png)
+![suzanne_level-3_smooth.png](./result/suzanne_level-3_smooth.png)
 
 * level 4, flat
 
-![level-4_flat.png](./result/level-4_flat.png)
+![suzanne_level-4_flat.png](./result/suzanne_level-4_flat.png)
 
 * level 4, smooth
 
-![level-4_smooth.png](./result/level-4_smooth.png)
+![suzanne_level-4_smooth.png](./result/suzanne_level-4_smooth.png)
