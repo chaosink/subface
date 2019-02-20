@@ -64,21 +64,28 @@ glm::mat4 Camera::Update(double time) {
 	x_ = x;
 	y_ = y;
 
+	float turn_speed = turn_speed_;
+	float move_speed = move_speed_;
+	if(glfwGetKey(window_, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		turn_speed *= 0.1f;
+		move_speed *= 0.1f;
+	}
+
 	// turn right
 	if(glfwGetKey(window_, GLFW_KEY_L) == GLFW_PRESS) {
-		angle_horizontal_ -= delta_time * turn_speed_;
+		angle_horizontal_ -= delta_time * turn_speed;
 	}
 	// turn left
 	if(glfwGetKey(window_, GLFW_KEY_J) == GLFW_PRESS) {
-		angle_horizontal_ += delta_time * turn_speed_;
+		angle_horizontal_ += delta_time * turn_speed;
 	}
 	// turn  up
 	if(glfwGetKey(window_, GLFW_KEY_I) == GLFW_PRESS) {
-		angle_vertical_ += delta_time * turn_speed_;
+		angle_vertical_ += delta_time * turn_speed;
 	}
 	// turn down
 	if(glfwGetKey(window_, GLFW_KEY_K) == GLFW_PRESS) {
-		angle_vertical_ -= delta_time * turn_speed_;
+		angle_vertical_ -= delta_time * turn_speed;
 	}
 
 	// Direction: Spherical coordinates to Cartesian coordinates conversion
@@ -98,22 +105,23 @@ glm::mat4 Camera::Update(double time) {
 
 	// move forward
 	if(glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS)
-		position_ += delta_time * move_speed_ * direction;
+		position_ += delta_time * move_speed * direction;
 	// move backward
 	if(glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_DOWN) == GLFW_PRESS)
-		position_ -= delta_time * move_speed_ * direction;
+		position_ -= delta_time * move_speed * direction;
 	// move right
 	if(glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		position_ += delta_time * move_speed_ * right;
+		position_ += delta_time * move_speed * right;
 	// move left
 	if(glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_LEFT) == GLFW_PRESS)
-		position_ -= delta_time * move_speed_ * right;
+		position_ -= delta_time * move_speed * right;
 	// move up
 	if(glfwGetKey(window_, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
-		position_ += delta_time * move_speed_ * up;
+		position_ += delta_time * move_speed * up;
 	// move down
 	if(glfwGetKey(window_, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
-		position_ -= delta_time * move_speed_ * up;
+		position_ -= delta_time * move_speed * up;
+
 	if(glfwGetKey(window_, GLFW_KEY_EQUAL) == GLFW_PRESS)
 		move_speed_ *= 1.1f;
 	if(glfwGetKey(window_, GLFW_KEY_MINUS) == GLFW_PRESS)
@@ -141,7 +149,7 @@ glm::mat4 Camera::Update(double time) {
 			position_ + direction, // and looks here: at the same position_, plus "direction"
 			up);                   // Head is up (set to 0,-1,0 to look upside-down)
 	// Projection matrix: 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	p_ = glm::perspective(fov_, float(window_w_) / window_h_, 0.1f, 100.f);
+	p_ = glm::perspective(fov_, float(window_w_) / window_h_, 0.01f, 100.f);
 	vp_ = p_ * v_;
 
 	return vp_;

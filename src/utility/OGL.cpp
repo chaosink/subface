@@ -221,6 +221,11 @@ void OGL::MV(glm::mat4 mv) {
 	glUniformMatrix4fv(mv_, 1, GL_FALSE, &mv[0][0]);
 }
 
+void OGL::Uniform(std::string name, int value) {
+	GLuint location = glGetUniformLocation(shader_, name.c_str());
+	glUniform1i(location, value);
+}
+
 bool OGL::Alive() {
 	return glfwGetKey(window_, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window_);
 }
@@ -229,8 +234,11 @@ void OGL::Clear(GLenum bit) {
 	glClear(bit);
 }
 
-void OGL::Update() {
+void OGL::Draw() {
 	glDrawArrays(GL_TRIANGLES, 0, n_vertex_);
+}
+
+void OGL::Update() {
 	glfwSwapBuffers(window_);
 	glfwPollEvents();
 }

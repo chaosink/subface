@@ -6,6 +6,7 @@ in Attribute {
 } vertexIn;
 
 uniform mat4 mv;
+uniform int wireframe;
 
 out vec3 color;
 
@@ -13,8 +14,10 @@ out vec3 color;
 vec3 Lighting(vec3 light_position, float light_power, int light_n) {
 	vec3 light_color = vec3(1.f, 1.f, 1.f);
 
-	const vec3 diffuse_color  = vec3(0.9f, 0.3f, 0.3f);
-	const vec3 ambient_color  = vec3(0.4f, 0.4f, 0.4f) * diffuse_color;
+	vec3 diffuse_color  = vec3(0.9f, 0.3f, 0.3f);
+	if(wireframe == 1)
+		diffuse_color = vec3(0.2f, 0.2f, 0.2f);
+	vec3 ambient_color  = vec3(0.4f, 0.4f, 0.4f) * diffuse_color;
 	const vec3 specular_color = vec3(0.3f, 0.3f, 0.3f);
 	const float shininess = 16.0;
 

@@ -20,7 +20,7 @@ int Vertex::Valence() {
 	}
 }
 
-void Vertex::OneRing(std::vector<glm::vec3> ring) {
+void Vertex::OneRing(std::vector<glm::vec3> &ring) {
 	Face *face = start_face;
 	uint i = 0;
 

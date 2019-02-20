@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -25,8 +26,10 @@ public:
 	void Normal(std::vector<glm::vec3> &normal);
 	void MVP(glm::mat4 mvp);
 	void MV(glm::mat4 mv);
+	void Uniform(std::string name, int value);
 	bool Alive();
 	void Clear(GLenum bit);
+	void Draw();
 	void Update();
 	double time() {
 		return glfwGetTime();

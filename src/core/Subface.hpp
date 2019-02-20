@@ -2,8 +2,11 @@
 
 #include <glm/glm.hpp>
 #include <algorithm>
+#include <memory>
 
 namespace subface {
+
+const float PI = 3.14159265358979323846f;
 
 #define NEXT(i) (((i) + 1 ) % 3)
 #define PREV(i) (((i) + 2 ) % 3)
@@ -20,7 +23,7 @@ struct Vertex {
 	Vertex(const glm::vec3 &p = glm::vec3(0, 0, 0)) : p(p) {}
 
 	int Valence();
-	void OneRing(std::vector<glm::vec3> ring);
+	void OneRing(std::vector<glm::vec3> &ring);
 };
 
 struct Edge {
@@ -77,6 +80,25 @@ struct Face {
 		for(int i = 0; i < 3; ++i)
 			if(v[i] != v0 && v[i] != v1) return v[i];
 		return nullptr;
+	}
+};
+
+class MemoryPool {
+	const size_t page_size_ = 4 * 1024 * 1024;
+	std::vector<std::unique_ptr<char[]>> pool_;
+	size_t size_ = page_size_;
+
+public:
+	template<typename T>
+	T* New() {
+		if(page_size_ - size_ < sizeof(T)) {
+			pool_.push_back(std::make_unique<char[]>(page_size_));
+			size_ = 0;
+		}
+
+		T* p = reinterpret_cast<T*>(&pool_.back()[size_]);
+		size_ += sizeof(T);
+		return p;
 	}
 };
 
