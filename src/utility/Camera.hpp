@@ -36,7 +36,6 @@ class Camera {
 
 	Toggle fix_ = Toggle(window_, GLFW_KEY_F, false);
 	Toggle print_vp_ = Toggle(window_, GLFW_KEY_P, false);
-	bool print_pressed = false;
 	bool mouse_button_right_pressed_ = false;
 public:
 	Camera(GLFWwindow *window, int window_w, int window_h, double time);
