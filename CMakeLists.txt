@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 include_directories(
 	src/core
 	src/utility
-	src/thirdparty/glew-2.1.0/include
+	src/thirdparty/glew-2.2.0/include
 	src/thirdparty/glfw-3.2.1/include
 	src/thirdparty/glm-0.9.8.5
 	src/thirdparty
@@ -46,8 +46,29 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/shader/fragment.glsl ${CMAKE_CURR
 
 
 
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glew-2.2.0)
+	file(DOWNLOAD
+		https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip
+		${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glew-2.2.0.zip
+		STATUS glew_download_status
+	)
+	list(GET glew_download_status 0 error_code)
+	list(GET glew_download_status 1 error_reason)
+	if(${error_code} EQUAL 0)
+		file(ARCHIVE_EXTRACT
+			INPUT "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glew-2.2.0.zip"
+			DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty"
+		)
+	else()
+		message(FATAL_ERROR
+			"Downloading glew-2.2.0.zip failed because of ${error_reason}!\n"
+			"You may try configuring for another time.\n"
+			"Or you can download it by yourself from \"https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.zip\" and extract to \"src/thirdparty\" so that \"src/thirdparty/glew-2.2.0/build/cmake\" exists."
+		)
+	endif()
+endif()
 option(BUILD_UTILS "utilities" OFF)
-add_subdirectory(src/thirdparty/glew-2.1.0/build/cmake)
+add_subdirectory(src/thirdparty/glew-2.2.0/build/cmake)
 
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
