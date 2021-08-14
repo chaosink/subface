@@ -22,7 +22,7 @@ int Vertex::Valence() {
 
 void Vertex::OneRing(std::vector<glm::vec3> &ring) {
 	Face *face = start_face;
-	uint i = 0;
+	uint32_t i = 0;
 
 	if(boundary) {
 		Face *f;

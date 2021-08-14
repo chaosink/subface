@@ -2,6 +2,8 @@
 
 #include "Subface.hpp"
 
+#include <string>
+
 namespace subface {
 
 class LoopSubface {
