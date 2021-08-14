@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 		time = ogl.time();
 		ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 m = glm::scale(glm::mat4(), glm::vec3(0.2f));
+		glm::mat4 m = glm::scale(glm::mat4(1.f), glm::vec3(0.2f));
 		glm::mat4 vp = camera.Update(time);
 		glm::mat4 mvp = vp * m;
 		ogl.MVP(mvp);
