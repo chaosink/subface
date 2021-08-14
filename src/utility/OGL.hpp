@@ -22,11 +22,11 @@ public:
 	~OGL();
 	GLFWwindow* InitGLFW(const char *title, int window_w, int window_h);
 	void InitGL(const char *vertex_file_path, const char *fragment_file_path, const char *geometry_file_path = nullptr);
-	void Vertex(std::vector<glm::vec3> &vertex);
-	void Normal(std::vector<glm::vec3> &normal);
-	void MVP(glm::mat4 mvp);
-	void MV(glm::mat4 mv);
-	void Uniform(std::string name, int value);
+	void Vertex(const std::vector<glm::vec3> &vertex);
+	void Normal(const std::vector<glm::vec3> &normal);
+	void MVP(const glm::mat4 &mvp);
+	void MV(const glm::mat4 &mv);
+	void Uniform(const std::string &name, int value);
 	bool Alive();
 	void Clear(GLenum bit);
 	void Draw();

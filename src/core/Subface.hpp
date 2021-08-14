@@ -16,7 +16,7 @@ struct Face;
 
 struct Vertex {
 	glm::vec3 p;
-	Face *start_face = nullptr;
+	const Face *start_face = nullptr;
 	Vertex *child = nullptr;
 	bool regular = false;
 	bool boundary = false;
@@ -28,11 +28,11 @@ struct Vertex {
 };
 
 struct Edge {
-	Vertex *v[2];
+	const Vertex *v[2];
 	Face *f;
 	int edge_num;
 
-	Edge(Vertex *v0 = nullptr, Vertex *v1 = nullptr) {
+	Edge(const Vertex *v0 = nullptr, const Vertex *v1 = nullptr) {
 		v[0] = std::min(v0, v1);
 		v[1] = std::max(v0, v1);
 		f = nullptr;
@@ -46,8 +46,8 @@ struct Edge {
 };
 
 struct Face {
-	Vertex *v[3];
-	Face *neighbors[3];
+	const Vertex *v[3];
+	const Face *neighbors[3];
 	Face *children[4];
 
 	Face() {
@@ -59,25 +59,25 @@ struct Face {
 			children[i] = nullptr;
 	}
 
-	int VNum(Vertex *vertex) const {
+	int VNum(const Vertex *vertex) const {
 		for(int i = 0; i < 3; ++i)
 			if(v[i] == vertex) return i;
 		return -1;
 	}
 
-	Face *NextNeighbor(Vertex *vertex) {
+	const Face *NextNeighbor(const Vertex *vertex) const {
 		return neighbors[VNum(vertex)];
 	}
-	Face *PrevNeighbor(Vertex *vertex) {
+	const Face *PrevNeighbor(const Vertex *vertex) const {
 		return neighbors[PREV(VNum(vertex))];
 	}
-	Vertex *NextVertex(Vertex *vertex) {
+	const Vertex *NextVertex(const Vertex *vertex) const {
 		return v[NEXT(VNum(vertex))];
 	}
-	Vertex *PrevVertex(Vertex *vertex) {
+	const Vertex *PrevVertex(const Vertex *vertex) const {
 		return v[PREV(VNum(vertex))];
 	}
-	Vertex *OtherVertex(Vertex *v0, Vertex *v1) {
+	const Vertex *OtherVertex(const Vertex *v0, const Vertex *v1) const {
 		for(int i = 0; i < 3; ++i)
 			if(v[i] != v0 && v[i] != v1) return v[i];
 		return nullptr;

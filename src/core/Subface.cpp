@@ -3,7 +3,7 @@
 namespace subface {
 
 int Vertex::Valence() {
-	Face *f = start_face;
+	const Face *f = start_face;
 	if(!boundary) {
 		int nf = 1;
 		while((f = f->NextNeighbor(this)) != start_face)
@@ -21,11 +21,11 @@ int Vertex::Valence() {
 }
 
 void Vertex::OneRing(std::vector<glm::vec3> &ring) {
-	Face *face = start_face;
+	const Face *face = start_face;
 	uint32_t i = 0;
 
 	if(boundary) {
-		Face *f;
+		const Face *f;
 		while((f = face->PrevNeighbor(this)) != nullptr)
 			face = f;
 		ring[i++] = face->PrevVertex(this)->p;

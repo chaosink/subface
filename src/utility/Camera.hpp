@@ -5,8 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-void PrintMat(glm::mat4 &m, const char *indent = "", const char *name = NULL);
-void PrintVec(glm::vec3 &v, const char *indent = "", const char *name = NULL);
+void PrintMat(const glm::mat4 &m, const char *indent = "", const char *name = NULL);
+void PrintVec(const glm::vec3 &v, const char *indent = "", const char *name = NULL);
 
 class Camera {
 	const double PI  = 3.14159265358979323846;
@@ -39,13 +39,13 @@ class Camera {
 	bool print_pressed = false;
 public:
 	Camera(GLFWwindow *window, int window_w, int window_h, double time);
-	glm::mat4 v() {
+	const glm::mat4& v() {
 		return v_;
 	}
-	glm::mat4 p() {
+	const glm::mat4& p() {
 		return p_;
 	}
-	glm::mat4 vp() {
+	const glm::mat4& vp() {
 		return vp_;
 	}
 	glm::mat4 Update(double time);

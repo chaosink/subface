@@ -7,7 +7,7 @@
 
 namespace subface {
 
-void LoopSubface::BuildTopology(std::vector<glm::vec3> &vertexes, std::vector<int> &indexes) {
+void LoopSubface::BuildTopology(const std::vector<glm::vec3> &vertexes, const std::vector<int> &indexes) {
 	int n_vertexes = vertexes.size();
 	int n_faces = indexes.size() / 3;
 
@@ -43,7 +43,7 @@ void LoopSubface::BuildTopology(std::vector<glm::vec3> &vertexes, std::vector<in
 
 	for(int i = 0; i < n_vertexes; ++i) {
 		Vertex *v = &vertexes_[i];
-		Face *f = v->start_face;
+		const Face *f = v->start_face;
 		do {
 			f = f->NextNeighbor(v);
 		} while(f && f != v->start_face);
@@ -163,7 +163,7 @@ void LoopSubface::Subdivide(int level) {
 				face->children[3]->neighbors[j] = face->children[NEXT(j)];
 				face->children[j]->neighbors[NEXT(j)] = face->children[3];
 
-				Face *f2 = face->neighbors[j];
+				const Face *f2 = face->neighbors[j];
 				face->children[j]->neighbors[j] =
 					f2 ? f2->children[f2->VNum(face->v[j])] : nullptr;
 				f2 = face->neighbors[PREV(j)];
@@ -235,7 +235,7 @@ void LoopSubface::Subdivide(int level) {
 		normals.push_back(glm::normalize(glm::cross(S, T)));
 	}
 
-	std::map<Vertex*, int> vertex_index;
+	std::map<const Vertex*, int> vertex_index;
 	for(size_t i = 0; i < v.size(); ++i)
 		vertex_index[v[i]] = i;
 

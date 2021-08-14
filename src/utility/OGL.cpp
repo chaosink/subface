@@ -182,7 +182,7 @@ void OGL::LoadShader(const char *vertex_file_path, const char *fragment_file_pat
 	mv_ = glGetUniformLocation(shader_, "mv");
 }
 
-void OGL::Vertex(std::vector<glm::vec3> &vertex) {
+void OGL::Vertex(const std::vector<glm::vec3> &vertex) {
 	glGenBuffers(1, &vertex_buffer_);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
@@ -198,7 +198,7 @@ void OGL::Vertex(std::vector<glm::vec3> &vertex) {
 	n_vertex_ = vertex.size();
 }
 
-void OGL::Normal(std::vector<glm::vec3> &normal) {
+void OGL::Normal(const std::vector<glm::vec3> &normal) {
 	glGenBuffers(1, &normal_buffer_);
 	glBindBuffer(GL_ARRAY_BUFFER, normal_buffer_);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * normal.size(), normal.data(), GL_STATIC_DRAW);
@@ -213,15 +213,15 @@ void OGL::Normal(std::vector<glm::vec3> &normal) {
 	);
 }
 
-void OGL::MVP(glm::mat4 mvp) {
+void OGL::MVP(const glm::mat4 &mvp) {
 	glUniformMatrix4fv(mvp_, 1, GL_FALSE, &mvp[0][0]);
 }
 
-void OGL::MV(glm::mat4 mv) {
+void OGL::MV(const glm::mat4 &mv) {
 	glUniformMatrix4fv(mv_, 1, GL_FALSE, &mv[0][0]);
 }
 
-void OGL::Uniform(std::string name, int value) {
+void OGL::Uniform(const std::string &name, int value) {
 	GLuint location = glGetUniformLocation(shader_, name.c_str());
 	glUniform1i(location, value);
 }

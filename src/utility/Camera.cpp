@@ -8,7 +8,7 @@ static void ScrollCallback(GLFWwindow* /*window*/, double /*x*/, double y) {
 	scoll = y;
 }
 
-void PrintMat(glm::mat4 &m, const char *indent, const char *name) {
+void PrintMat(const glm::mat4 &m, const char *indent, const char *name) {
 	printf("\n");
 	printf("%s", indent);
 	if(name) printf("%s = ", name);
@@ -20,7 +20,7 @@ void PrintMat(glm::mat4 &m, const char *indent, const char *name) {
 	printf("%s);\n", indent);
 }
 
-void PrintVec(glm::vec3 &v, const char *indent, const char *name) {
+void PrintVec(const glm::vec3 &v, const char *indent, const char *name) {
 	printf("\n");
 	printf("%s", indent);
 	if(name) printf("%s = ", name);
