@@ -30,8 +30,8 @@ void PrintVec(const glm::vec3 &v, const char *indent, const char *name) {
 Camera::Camera(GLFWwindow *window, int window_w, int window_h, double time)
 	: window_(window), window_w_(window_w), window_h_(window_h), time_(time) {
 	glfwSetScrollCallback(window, ScrollCallback);
-	glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwGetCursorPos(window_, &x_, &y_);
+	// glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	// glfwGetCursorPos(window_, &x_, &y_);
 }
 
 glm::mat4 Camera::Update(double time) {
@@ -57,12 +57,23 @@ glm::mat4 Camera::Update(double time) {
 	float delta_time = time - time_;
 	time_ = time;
 
-	double x, y;
-	glfwGetCursorPos(window_, &x, &y);
-	angle_horizontal_ += mouse_turn_factor_ * float(x_ - x);
-	angle_vertical_   += mouse_turn_factor_ * float(y_ - y);
-	x_ = x;
-	y_ = y;
+	if(glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		if(!mouse_button_right_pressed_) {
+			glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			glfwGetCursorPos(window_, &x_, &y_);
+			mouse_button_right_pressed_ = true;
+		} else {
+			double x, y;
+			glfwGetCursorPos(window_, &x, &y);
+			angle_horizontal_ += mouse_turn_factor_ * float(x_ - x);
+			angle_vertical_ += mouse_turn_factor_ * float(y_ - y);
+			x_ = x;
+			y_ = y;
+		}
+	} else {
+		glfwSetInputMode(window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		mouse_button_right_pressed_ = false;
+	}
 
 	float turn_speed = turn_speed_;
 	float move_speed = move_speed_;

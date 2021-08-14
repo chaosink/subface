@@ -28,6 +28,7 @@ key | function
 `-`/`=` | slow down / speed up movement
 `[`/`]` | slow down / speed up turning
 `Space` | reset camera
+`mouse right button` | change camera direction
 `mouse scroll wheel` | adjust field of view
 
 * rendering
