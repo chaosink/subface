@@ -38,6 +38,7 @@ key | function
 `Tab` | switch rendering mode: face, wireframe, face + wireframe(default)
 `N` | enable / disable(default) smooth rendering
 `C` | enable(default) / disable face culling
+`T` | enable(default) / disable transparent window
 `O` | export the subdivided mesh as OBJ file
 
 # Results

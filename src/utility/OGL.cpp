@@ -23,7 +23,8 @@ GLFWwindow* OGL::InitGLFW(const char *window_title, int window_w, int window_h) 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+	// glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
 	window_ = glfwCreateWindow(window_w_, window_h_, window_title, NULL, NULL);
 	if(!window_) {
@@ -44,7 +45,8 @@ GLFWwindow* OGL::InitGLFW(const char *window_title, int window_w, int window_h) 
 }
 
 void OGL::InitGL(const char *vertex_file_path, const char *fragment_file_path, const char *geometry_file_path) {
-	glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+	// glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+	// glClearColor(0.f, 0.f, 0.f, 0.f);
 	// glEnable(GL_BLEND);
 	// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_DEPTH_TEST);

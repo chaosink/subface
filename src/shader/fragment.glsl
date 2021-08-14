@@ -8,7 +8,7 @@ in Attribute {
 uniform mat4 mv;
 uniform int wireframe;
 
-out vec3 color;
+out vec4 color;
 
 // Blinn-Phong shading
 vec3 Lighting(vec3 light_position, float light_power, int light_n) {
@@ -35,12 +35,12 @@ vec3 Lighting(vec3 light_position, float light_power, int light_n) {
 	float cos_alpha = dot(half_direction, normal);
 	float specular = pow(clamp(cos_alpha, 0.f, 1.f), shininess);
 
-	color =
+	vec3 c =
 		ambient_color / light_n +
 		diffuse_color * lambertian * light_color * light_power / distance +
 		specular_color * specular  * light_color * light_power / distance;
 
-	return color;
+	return c;
 }
 
 void main() {
@@ -54,5 +54,5 @@ void main() {
 	// c = vec4(1.f, 1.f, 1.f, 1.f);
 	// c = vertexIn.normal;
 
-	color = c;
+	color = vec4(c, 1.f);
 }

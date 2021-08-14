@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
 	int render_mode = 2;
 	Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
 	Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
+	Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, true);
 	Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
 	int level = 0, level_old = 0;
 
@@ -70,6 +71,12 @@ int main(int argc, char *argv[]) {
 			glDisable(GL_CULL_FACE);
 		}, [&]() {
 			glEnable(GL_CULL_FACE);
+		});
+
+		enable_transparent_window.Update([&]() {
+			glClearColor(0.f, 0.f, 0.f, 0.f);
+		}, [&]() {
+			glClearColor(0.08f, 0.16f, 0.24f, 1.f);
 		});
 
 		export_mesh.Update([&]() {
