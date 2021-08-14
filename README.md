@@ -5,7 +5,7 @@ An implementation of Loop subdivision surfaces.
 # Compiling
 
 ```
-git clone https://github.com/chaosink/subface.git
+git clone https://github.com/chaosink/subface.git --recursive
 cd subface
 mkdir build
 cd build

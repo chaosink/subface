@@ -70,6 +70,12 @@ endif()
 option(BUILD_UTILS "utilities" OFF)
 add_subdirectory(src/thirdparty/glew-2.2.0/build/cmake)
 
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glfw)
+	message(FATAL_ERROR
+		"\"src/thirdparty/glfw\" doesn't exist!\n"
+		"Did you use \"--recursive\" when cloning?\n"
+	)
+endif()
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
