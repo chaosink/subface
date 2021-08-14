@@ -40,11 +40,12 @@ target_link_libraries(subface
 	glew_s
 	glfw
 )
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/shader/vertex.glsl ${CMAKE_CURRENT_BINARY_DIR}/shader/vertex.glsl COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/shader/fragment.glsl ${CMAKE_CURRENT_BINARY_DIR}/shader/fragment.glsl COPYONLY)
-
-
+add_custom_command(TARGET subface POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader $<TARGET_FILE_DIR:subface>/shader
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CMAKE_CURRENT_SOURCE_DIR}/src/shader ${CMAKE_CURRENT_BINARY_DIR}/shader
+)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glew-2.2.0)
 	file(DOWNLOAD
