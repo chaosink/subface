@@ -17,7 +17,7 @@ include_directories(
 	src/core
 	src/utility
 	src/thirdparty/glew-2.2.0/include
-	src/thirdparty/glfw-3.2.1/include
+	src/thirdparty/glfw/include
 	src/thirdparty/glm-0.9.8.5
 	src/thirdparty
 	${OPENGL_INCLUDE_DIR}
@@ -73,4 +73,5 @@ add_subdirectory(src/thirdparty/glew-2.2.0/build/cmake)
 option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
-add_subdirectory(src/thirdparty/glfw-3.2.1)
+option(GLFW_INSTALL "Generate installation target" OFF)
+add_subdirectory(src/thirdparty/glfw)
