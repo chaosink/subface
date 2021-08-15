@@ -12,8 +12,8 @@
 namespace subface {
 
 void LoopSubface::BuildTopology(const std::vector<glm::vec3> &vertexes, const std::vector<int> &indexes) {
-	int n_vertexes = vertexes.size();
-	int n_faces = indexes.size() / 3;
+	size_t n_vertexes = vertexes.size();
+	size_t n_faces = indexes.size() / 3;
 
 	vertexes_.resize(n_vertexes);
 	for(int i = 0; i < n_vertexes; ++i)
@@ -243,7 +243,7 @@ void LoopSubface::Subdivide(int level) {
 
 	std::map<const Vertex*, int> vertex_index;
 	for(size_t i = 0; i < v.size(); ++i)
-		vertex_index[v[i]] = i;
+		vertex_index[v[i]] = static_cast<int>(i);
 
 	indexed_vertex_.resize(v.size());
 	for(size_t i = 0; i < v.size(); ++i)
@@ -271,7 +271,7 @@ void LoopSubface::Subdivide(int level) {
 			vertex_[i * 3 + j] = f[i]->v[j]->p;
 			normal_smooth_[i * 3 + j] = normals[vertex_index[f[i]->v[j]]];
 			normal_flat_[i * 3 + j] = normal_flat;
-			index_normal_flat_[i * 3 + j] = i;
+			index_normal_flat_[i * 3 + j] = static_cast<int>(i);
 		}
 		indexed_normal_flat_[i] = normal_flat;
 	}

@@ -237,7 +237,7 @@ void OGL::Clear(GLenum bit) {
 }
 
 void OGL::Draw() {
-	glDrawArrays(GL_TRIANGLES, 0, n_vertex_);
+	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(n_vertex_));
 }
 
 void OGL::Update() {

@@ -17,9 +17,9 @@ class Camera {
 	glm::mat4 v_, p_, vp_;
 
 	const glm::vec3 position_init_ = glm::vec3(0.f, 0.f, 1.f);
-	const float angle_horizontal_init_ = PI;
+	const float angle_horizontal_init_ = static_cast<float>(PI);
 	const float angle_vertical_init_ = 0.f;
-	const float fov_init_ = PI / 4.f;
+	const float fov_init_ = static_cast<float>(PI / 4.f);
 
 	glm::vec3 position_ = position_init_;
 	float angle_horizontal_ = angle_horizontal_init_;

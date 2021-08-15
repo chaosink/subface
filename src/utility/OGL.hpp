@@ -14,7 +14,7 @@ class OGL {
 	GLuint shader_;
 	GLuint mvp_, mv_;
 	GLuint vertex_array_, vertex_buffer_, normal_buffer_;
-	int n_vertex_;
+	size_t n_vertex_;
 
 	GLuint LoadShaderFromString(const char *vertex_string, const char *fragment_string, const char *geometry_string = nullptr);
 	void LoadShader(const char *vertex_file_path, const char *fragment_file_path, const char *geometry_file_path = nullptr);

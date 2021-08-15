@@ -63,7 +63,7 @@ Model::Model(GLFWwindow *window, const char *file_name) : window_(window) {
 }
 
 glm::mat4 Model::Update(double time) {
-	float delta_time = time - time_;
+	float delta_time = static_cast<float>(time - time_);
 	time_ = time;
 	// -y
 	if(glfwGetKey(window_, GLFW_KEY_G) == GLFW_PRESS) {

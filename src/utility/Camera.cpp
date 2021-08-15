@@ -54,7 +54,7 @@ glm::mat4 Camera::Update(double time) {
 	});
 	if(fix_.state()) return vp_;
 
-	float delta_time = time - time_;
+	float delta_time = static_cast<float>(time - time_);
 	time_ = time;
 
 	if(glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
@@ -153,7 +153,7 @@ glm::mat4 Camera::Update(double time) {
 		PrintMat(vp_, "\t\t", "vp_");
 		PrintMat(v_, "\t\t", "v_");
 	});
-	fov_ += delta_time * scroll_speed_ * scoll;
+	fov_ += static_cast<float>(delta_time * scroll_speed_ * scoll);
 	scoll = 0;
 
 	// Camera matrix

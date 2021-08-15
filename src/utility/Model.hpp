@@ -21,7 +21,7 @@ class Model {
 public:
 	Model(GLFWwindow *window, const char *file_name);
 	~Model() {}
-	int n_vertex() {
+	size_t n_vertex() {
 		return vertex_.size();
 	}
 	std::vector<glm::vec3>& vertex() {
