@@ -7,9 +7,14 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "FPS.hpp"
+
 class OGL {
 	int window_w_, window_h_;
 	GLFWwindow *window_;
+	std::string window_title_;
+
+	FPS fps_;
 
 	GLuint shader_;
 	GLuint mvp_, mv_;
@@ -20,7 +25,7 @@ class OGL {
 	void LoadShader(const char *vertex_file_path, const char *fragment_file_path, const char *geometry_file_path = nullptr);
 public:
 	~OGL();
-	GLFWwindow* InitGLFW(const char *title, int window_w, int window_h);
+	GLFWwindow* InitGLFW(std::string window_title, int window_w, int window_h);
 	void InitGL(const char *vertex_file_path, const char *fragment_file_path, const char *geometry_file_path = nullptr);
 	void Vertex(const std::vector<glm::vec3> &vertex);
 	void Normal(const std::vector<glm::vec3> &normal);

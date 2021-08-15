@@ -5,7 +5,6 @@ using namespace std;
 
 #include "OGL.hpp"
 #include "Camera.hpp"
-#include "FPS.hpp"
 #include "Model.hpp"
 #include "LoopSubface.hpp"
 using namespace subface;
@@ -44,7 +43,6 @@ int main(int argc, char *argv[]) {
 
 	double time = ogl.time();
 	Camera camera(ogl.window(), window_w, window_h, time);
-	FPS fps(time);
 	while(ogl.Alive()) {
 		time = ogl.time();
 		ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -110,9 +108,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		ogl.Update();
-		fps.Update(time);
 	}
-	fps.Term();
 
 	return 0;
 }

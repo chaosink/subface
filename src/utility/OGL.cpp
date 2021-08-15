@@ -13,7 +13,8 @@ OGL::~OGL() {
 	glfwTerminate();
 }
 
-GLFWwindow* OGL::InitGLFW(const char *window_title, int window_w, int window_h) {
+GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h) {
+	window_title_ = window_title;
 	window_w_ = window_w;
 	window_h_ = window_h;
 
@@ -26,7 +27,7 @@ GLFWwindow* OGL::InitGLFW(const char *window_title, int window_w, int window_h) 
 	// glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
-	window_ = glfwCreateWindow(window_w_, window_h_, window_title, NULL, NULL);
+	window_ = glfwCreateWindow(window_w_, window_h_, window_title_.c_str(), NULL, NULL);
 	if(!window_) {
 		glfwTerminate();
 		exit(EXIT_FAILURE);
@@ -39,6 +40,8 @@ GLFWwindow* OGL::InitGLFW(const char *window_title, int window_w, int window_h) 
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		exit(EXIT_FAILURE);
 	}
+
+	fps_.Init(time());
 
 	// glfwSwapInterval(1);
 	return window_;
@@ -240,7 +243,12 @@ void OGL::Draw() {
 	glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(n_vertex_));
 }
 
+#include <spdlog/fmt/fmt.h>
 void OGL::Update() {
 	glfwSwapBuffers(window_);
 	glfwPollEvents();
+
+	fps_.Update(time());
+	std::string title = fmt::format("{} {:6.2f} FPS", window_title_, fps_.fps());
+	glfwSetWindowTitle(window_, title.c_str());
 }
