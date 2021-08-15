@@ -31,7 +31,7 @@ class Camera {
 	float mouse_turn_factor_ = 0.002f;
 	float scroll_speed_ = 2.f;
 
-	double time_;;
+	double time_;
 	double x_, y_;
 
 	Toggle fix_ = Toggle(window_, GLFW_KEY_F, false);
