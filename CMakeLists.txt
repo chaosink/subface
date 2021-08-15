@@ -28,6 +28,10 @@ add_library(core
 	src/core/Subface.cpp
 	src/core/LoopSubface.cpp
 )
+target_link_libraries(core
+	spdlog::spdlog
+)
+
 add_executable(subface
 	src/subface/subface.cpp
 	src/utility/Camera.cpp
@@ -41,7 +45,6 @@ target_link_libraries(subface
 	core
 	glew_s
 	glfw
-	spdlog::spdlog
 )
 add_custom_command(TARGET subface POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory

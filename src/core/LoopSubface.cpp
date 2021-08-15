@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <spdlog/spdlog.h>
+
 #include "Timer.hpp"
 
 namespace subface {
@@ -305,7 +307,7 @@ void LoopSubface::Export(std::string file_name, bool smooth) {
 				<< index_vertex_[i + 2] + 1 << "//" << index_normal_flat_[i + 2] + 1 << std::endl;
 	}
 
-	std::cout << "\rMesh exported: " << file_name << std::endl;
+	spdlog::info("Mesh exported: {}", file_name);
 }
 
 }
