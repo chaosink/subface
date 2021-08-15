@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "Timer.hpp"
+
 namespace subface {
 
 void LoopSubface::BuildTopology(const std::vector<glm::vec3> &vertexes, const std::vector<int> &indexes) {
@@ -91,6 +93,8 @@ glm::vec3 LoopSubface::WeightBoundary(Vertex *v, float beta) {
 }
 
 void LoopSubface::Subdivide(int level) {
+	Timer timer("LoopSubface::Subdivide()");
+
 	level_ = level;
 
 	std::vector<Vertex*> v(vertexes_.size());

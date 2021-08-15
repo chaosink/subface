@@ -6,7 +6,7 @@ float FPS::Update(double time) {
 	if(c_frame_++ % 10 == 0) {
 		fps_ = 10 / (time - time_);
 		time_ = time;
-		printf("\rFPS: %f", fps_);
+		printf("\rFPS: %9f ", fps_);
 		fflush(stdout);
 	}
 	return fps_;

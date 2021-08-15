@@ -16,10 +16,11 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 include_directories(
 	src/core
 	src/utility
+	src/thirdparty
 	src/thirdparty/glew-2.2.0/include
 	src/thirdparty/glfw/include
 	src/thirdparty/glm
-	src/thirdparty
+	src/thirdparty/spdlog/include
 	${OPENGL_INCLUDE_DIR}
 )
 
@@ -31,14 +32,16 @@ add_executable(subface
 	src/subface/subface.cpp
 	src/utility/Camera.cpp
 	src/utility/FPS.cpp
-	src/utility/Toggle.cpp
-	src/utility/OGL.cpp
 	src/utility/Model.cpp
+	src/utility/OGL.cpp
+	src/utility/Timer.cpp
+	src/utility/Toggle.cpp
 )
 target_link_libraries(subface
 	core
 	glew_s
 	glfw
+	spdlog::spdlog
 )
 add_custom_command(TARGET subface POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -82,3 +85,5 @@ option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
 option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
 option(GLFW_INSTALL "Generate installation target" OFF)
 add_subdirectory(src/thirdparty/glfw)
+
+add_subdirectory(src/thirdparty/spdlog)
