@@ -277,6 +277,8 @@ void LoopSubface::Subdivide(int level) {
 	}
 
 	indexed_normal_smooth_ = std::move(normals);
+
+	spdlog::info("Subdivision level {}: {} faces, {} vertices", level_, f.size(), vertex_.size());
 }
 
 void LoopSubface::Export(std::string file_name, bool smooth) {
