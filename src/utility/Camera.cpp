@@ -35,24 +35,17 @@ Camera::Camera(GLFWwindow *window, int window_w, int window_h, double time)
 }
 
 glm::mat4 Camera::Update(double time) {
-	fix_.Update([this]{ // call this lambda when toggle `fix_` turn on
-		vp_ = glm::mat4(
-			1.196924, 0.562701, 0.411706, 0.410883,
-			0.000000, 2.099883, -0.494392, -0.493404,
-			0.641501, -1.049898, -0.768168, -0.766634,
-			0.237233, -0.005142, 2.940655, 3.134580
-		);
-		v_ = glm::mat4(
-			0.881391, 0.233078, -0.410883, 0.000000,
-			0.000000, 0.869800, 0.493404, 0.000000,
-			0.472388, -0.434882, 0.766634, 0.000000,
-			0.174693, -0.002130, -3.134580, 1.000000
-		);
-
-	}, [this]{ // call this lambda when toggle `fix_` turn off
-		glfwGetCursorPos(window_, &x_, &y_);
-	});
-	if(fix_.state()) return vp_;
+	// fix_.Update([this]{ // call this lambda when toggle `fix_` turn on
+	// 	v_ = glm::mat4(
+	// 		0.881391, 0.233078, -0.410883, 0.000000,
+	// 		0.000000, 0.869800, 0.493404, 0.000000,
+	// 		0.472388, -0.434882, 0.766634, 0.000000,
+	// 		0.174693, -0.002130, -3.134580, 1.000000
+	// 	);
+	// }, [this]{ // call this lambda when toggle `fix_` turn off
+	// 	glfwGetCursorPos(window_, &x_, &y_);
+	// });
+	// if(fix_.state()) return mvp_;
 
 	float delta_time = static_cast<float>(time - time_);
 	time_ = time;
@@ -115,6 +108,28 @@ glm::mat4 Camera::Update(double time) {
 	// Up vector
 	glm::vec3 up = glm::cross(right, direction);
 
+	if(!mouse_button_right_pressed_ && glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+		if(!mouse_button_left_pressed_) {
+			double x, y;
+			glfwGetCursorPos(window_, &x, &y);
+			x_ = x;
+			y_ = y;
+			mouse_button_left_pressed_ = true;
+		} else {
+			double x, y;
+			glfwGetCursorPos(window_, &x, &y);
+			if (x != x_ || y != y_) {
+				glm::vec3 offset = right * static_cast<float>(x - x_) - up * static_cast<float>(y - y_);
+				glm::vec3 axis = glm::cross(offset, direction);
+				m_ = glm::rotate(m_, glm::length(offset) / 100.f, axis);
+				x_ = x;
+				y_ = y;
+			}
+		}
+	} else {
+		mouse_button_left_pressed_ = false;
+	}
+
 	// move forward
 	if(glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window_, GLFW_KEY_UP) == GLFW_PRESS)
 		position_ += delta_time * move_speed * direction;
@@ -144,14 +159,17 @@ glm::mat4 Camera::Update(double time) {
 		turn_speed_ *= 0.9f;
 
 	if(glfwGetKey(window_, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		m_ = m_init_;
 		position_ = position_init_;
 		angle_horizontal_ = angle_horizontal_init_;
 		angle_vertical_ = angle_vertical_init_;
 		fov_ = fov_init_;
 	}
 	print_vp_.Update([this]{ // call this lambda when toggle `print_vp_` turn on
-		PrintMat(vp_, "\t\t", "vp_");
+		PrintMat(mvp_, "\t\t", "mvp_");
+		PrintMat(m_, "\t\t", "m_");
 		PrintMat(v_, "\t\t", "v_");
+		PrintMat(p_, "\t\t", "p_");
 	});
 	fov_ += static_cast<float>(delta_time * scroll_speed_ * scoll);
 	scoll = 0;
@@ -163,7 +181,9 @@ glm::mat4 Camera::Update(double time) {
 			up);                   // Head is up (set to 0,-1,0 to look upside-down)
 	// Projection matrix: 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	p_ = glm::perspective(fov_, float(window_w_) / window_h_, 0.01f, 100.f);
-	vp_ = p_ * v_;
 
-	return vp_;
+	mv_ = v_ * m_;
+	mvp_ = p_ * mv_;
+
+	return mvp_;
 }

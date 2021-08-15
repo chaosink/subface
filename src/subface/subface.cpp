@@ -49,13 +49,9 @@ int main(int argc, char *argv[]) {
 		time = ogl.time();
 		ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 m = glm::scale(glm::mat4(1.f), glm::vec3(0.2f));
-		glm::mat4 vp = camera.Update(time);
-		glm::mat4 mvp = vp * m;
+		glm::mat4 mvp = camera.Update(time);
 		ogl.MVP(mvp);
-		glm::mat4 v = camera.v();
-		glm::mat4 mv = v * m;
-		ogl.MV(mv);
+		ogl.MV(camera.mv());
 
 		switch_render_mode.Update([&]() {
 			render_mode = (render_mode + 1) % 3;

@@ -27,7 +27,8 @@ key | function
 (`Shift` +) `J`/`L`/`I`/`K` | (slowly) turn left / right / up / down
 `-`/`=` | slow down / speed up movement
 `[`/`]` | slow down / speed up turning
-`Space` | reset camera
+`Space` | reset camera and model
+`mouse left button` | rotate model
 `mouse right button` | change camera direction
 `mouse scroll wheel` | adjust field of view
 

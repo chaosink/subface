@@ -4,6 +4,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 void PrintMat(const glm::mat4 &m, const char *indent = "", const char *name = NULL);
 void PrintVec(const glm::vec3 &v, const char *indent = "", const char *name = NULL);
@@ -14,7 +15,8 @@ class Camera {
 	GLFWwindow *window_;
 	int window_w_, window_h_;
 
-	glm::mat4 v_, p_, vp_;
+	const glm::mat4 m_init_ = glm::scale(glm::mat4(1.f), glm::vec3(0.2f));
+	glm::mat4 m_ = m_init_, v_, p_, mv_, mvp_;
 
 	const glm::vec3 position_init_ = glm::vec3(0.f, 0.f, 1.f);
 	const float angle_horizontal_init_ = static_cast<float>(PI);
@@ -36,17 +38,15 @@ class Camera {
 
 	Toggle fix_ = Toggle(window_, GLFW_KEY_F, false);
 	Toggle print_vp_ = Toggle(window_, GLFW_KEY_P, false);
+	bool mouse_button_left_pressed_ = false;
 	bool mouse_button_right_pressed_ = false;
 public:
 	Camera(GLFWwindow *window, int window_w, int window_h, double time);
-	const glm::mat4& v() {
-		return v_;
+	const glm::mat4& mv() {
+		return mv_;
 	}
-	const glm::mat4& p() {
-		return p_;
-	}
-	const glm::mat4& vp() {
-		return vp_;
+	const glm::mat4& mvp() {
+		return mvp_;
 	}
 	glm::mat4 Update(double time);
 };
