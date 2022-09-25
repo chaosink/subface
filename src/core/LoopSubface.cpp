@@ -132,7 +132,7 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
     std::vector<glm::vec3> ring;
     for (const Vertex* v : vertexes) {
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
-        int valence = v->valence;
+        size_t valence = v->valence;
         ring = v->OneRing();
         if (!v->boundary) {
             for (int i = 0; i < valence; ++i) {
