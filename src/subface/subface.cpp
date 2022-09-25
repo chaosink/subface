@@ -18,11 +18,15 @@ struct ProcessingMethod {
 std::vector<ProcessingMethod> processing_methods = {
     { "SubdivideSmooth",
         [](LoopSubface& ls, int level) {
-            ls.Subdivide(level, false);
+            ls.Subdivide(level, false, true);
+        } },
+    { "SubdivideSmoothNoLimit",
+        [](LoopSubface& ls, int level) {
+            ls.Subdivide(level, false, false);
         } },
     { "SubdivideFlat",
         [](LoopSubface& ls, int level) {
-            ls.Subdivide(level, true);
+            ls.Subdivide(level, true, false);
         } },
     { "Tesselate4",
         [](LoopSubface& ls, int level) {
@@ -70,7 +74,7 @@ int main(int argc, char* argv[])
 
     LoopSubface ls;
     ls.BuildTopology(model.indexed_vertex(), model.index());
-    ls.Subdivide(0, false);
+    ls.Subdivide(0, false, true);
 
     // ogl.Vertex(model.vertex());
     // ogl.Normal(model.normal());

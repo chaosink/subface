@@ -199,9 +199,9 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
     indexed_smooth_normals_ = std::move(smooth_normals);
 }
 
-void LoopSubface::Subdivide(int level, bool flat)
+void LoopSubface::Subdivide(int level, bool flat, bool compute_limit)
 {
-    std::string func_name = fmt::format("LoopSubface::Subdivide(level={}, flat={})", level, flat);
+    std::string func_name = fmt::format("LoopSubface::Subdivide(level={}, flat={}, compute_limit={})", level, flat, compute_limit);
     Timer timer(func_name);
 
     level_ = level;
@@ -342,7 +342,7 @@ void LoopSubface::Subdivide(int level, bool flat)
         faces_base = std::move(faces_new);
     }
 
-    if (!flat && level) {
+    if (!flat && level && compute_limit) {
         std::vector<glm::vec3> limit(vertexes_base.size());
         for (size_t i = 0; i < vertexes_base.size(); ++i)
             if (vertexes_base[i]->boundary)
