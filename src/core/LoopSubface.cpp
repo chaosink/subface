@@ -432,8 +432,10 @@ void LoopSubface::Tessellate3(int level)
                     const Face* fn = f->neighbors[ci];
                     if (fn) {
                         int fn_ci = fn->VertexId(f->v[ci]);
-                        // Opposite normals.
-                        if (fn->neighbors[fn_ci] == f)
+                        // `fn->neighbors[fn_ci] == f` implies neighbor triangles with opposite normals,
+                        // except the really rare case `fn->neighbors[PREV(fn_ci)] == f`,
+                        // which means 2 triangles sharing the same 3 vertexes.
+                        if (fn->neighbors[fn_ci] == f && fn->neighbors[PREV(fn_ci)] != f)
                             f->children[ci]->neighbors[ci] = fn->children[fn_ci];
                         else
                             f->children[ci]->neighbors[ci] = fn->children[PREV(fn_ci)];
