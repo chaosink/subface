@@ -4,111 +4,116 @@ using namespace std;
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "OGL.hpp"
+
 #include "Camera.hpp"
 #include "Model.hpp"
+
 #include "LoopSubface.hpp"
 using namespace subface;
 
-int main(int argc, char *argv[]) {
-	if(argc < 2) {
-		printf("Usage: subface model_file\n");
-		return 0;
-	}
+int main(int argc, char* argv[])
+{
+    if (argc < 2) {
+        printf("Usage: subface model_file\n");
+        return 0;
+    }
 
-	int window_w = 1280;
-	int window_h = 720;
+    int window_w = 1280;
+    int window_h = 720;
 
-	OGL ogl;
-	ogl.InitGLFW("Subface", window_w, window_h);
-	ogl.InitGL("shader/vertex.glsl", "shader/fragment.glsl");
+    OGL ogl;
+    ogl.InitGLFW("Subface", window_w, window_h);
+    ogl.InitGL("shader/vertex.glsl", "shader/fragment.glsl");
 
-	Model model(ogl.window(), argv[1]);
+    Model model(ogl.window(), argv[1]);
 
-	LoopSubface ls;
-	ls.BuildTopology(model.indexed_vertex(), model.index());
-	ls.Subdivide(0);
+    LoopSubface ls;
+    ls.BuildTopology(model.indexed_vertex(), model.index());
+    ls.Subdivide(0);
 
-	// ogl.Vertex(model.vertex());
-	// ogl.Normal(model.normal());
-	ogl.Vertex(ls.vertex());
-	ogl.Normal(ls.normal_flat());
+    // ogl.Vertex(model.vertex());
+    // ogl.Normal(model.normal());
+    ogl.Vertex(ls.vertex());
+    ogl.Normal(ls.normal_flat());
 
-	Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
-	int render_mode = 2;
-	Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
-	Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
-	Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, true);
-	Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
-	int level = 0, level_old = 0;
+    Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
+    int render_mode = 2;
+    Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
+    Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
+    Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, true);
+    Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
+    int level = 0, level_old = 0;
 
-	double time = ogl.time();
-	Camera camera(ogl.window(), window_w, window_h, time);
-	while(ogl.Alive()) {
-		time = ogl.time();
-		ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    double time = ogl.time();
+    Camera camera(ogl.window(), window_w, window_h, time);
+    while (ogl.Alive()) {
+        time = ogl.time();
+        ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glm::mat4 mvp = camera.Update(time);
-		ogl.MVP(mvp);
-		ogl.MV(camera.mv());
+        glm::mat4 mvp = camera.Update(time);
+        ogl.MVP(mvp);
+        ogl.MV(camera.mv());
 
-		switch_render_mode.Update([&]() {
-			render_mode = (render_mode + 1) % 3;
-		});
+        // clang-format off
+        switch_render_mode.Update([&]() {
+            render_mode = (render_mode + 1) % 3;
+        });
 
-		enable_smooth_normal.Update([&]() {
-			ogl.Normal(ls.normal_smooth());
-		}, [&]() {
-			ogl.Normal(ls.normal_flat());
-		});
+        enable_smooth_normal.Update([&]() {
+            ogl.Normal(ls.normal_smooth());
+        }, [&]() {
+            ogl.Normal(ls.normal_flat());
+        });
 
-		enable_cull_face.Update([&]() {
-			glDisable(GL_CULL_FACE);
-		}, [&]() {
-			glEnable(GL_CULL_FACE);
-		});
+        enable_cull_face.Update([&]() {
+            glDisable(GL_CULL_FACE);
+        }, [&]() {
+            glEnable(GL_CULL_FACE);
+        });
 
-		enable_transparent_window.Update([&]() {
-			glClearColor(0.f, 0.f, 0.f, 0.f);
-		}, [&]() {
-			glClearColor(0.08f, 0.16f, 0.24f, 1.f);
-		});
+        enable_transparent_window.Update([&]() {
+            glClearColor(0.f, 0.f, 0.f, 0.f);
+        }, [&]() {
+            glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+        });
 
-		export_mesh.Update([&]() {
-			ls.Export(argv[1], enable_smooth_normal.state());
-		});
+        export_mesh.Update([&]() {
+            ls.Export(argv[1], enable_smooth_normal.state());
+        });
+        // clang-format on
 
-		for(int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
-			if(glfwGetKey(ogl.window(), key) == GLFW_PRESS)
-				level = key - GLFW_KEY_0;
-		if(level != level_old) {
-			level_old = level;
-			ls.Subdivide(level);
-			ogl.Vertex(ls.vertex());
-			if(enable_smooth_normal.state())
-				ogl.Normal(ls.normal_smooth());
-			else
-				ogl.Normal(ls.normal_flat());
-		}
+        for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
+            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
+                level = key - GLFW_KEY_0;
+        if (level != level_old) {
+            level_old = level;
+            ls.Subdivide(level);
+            ogl.Vertex(ls.vertex());
+            if (enable_smooth_normal.state())
+                ogl.Normal(ls.normal_smooth());
+            else
+                ogl.Normal(ls.normal_flat());
+        }
 
-		if(render_mode == 0) {
-			ogl.Uniform("wireframe", 0);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			ogl.Draw();
-		} else if(render_mode == 1) {
-			ogl.Uniform("wireframe", 0);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			ogl.Draw();
-		} else if(render_mode == 2) {
-			ogl.Uniform("wireframe", 0);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			ogl.Draw();
-			ogl.Uniform("wireframe", 1);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			ogl.Draw();
-		}
+        if (render_mode == 0) {
+            ogl.Uniform("wireframe", 0);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            ogl.Draw();
+        } else if (render_mode == 1) {
+            ogl.Uniform("wireframe", 0);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            ogl.Draw();
+        } else if (render_mode == 2) {
+            ogl.Uniform("wireframe", 0);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            ogl.Draw();
+            ogl.Uniform("wireframe", 1);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            ogl.Draw();
+        }
 
-		ogl.Update();
-	}
+        ogl.Update();
+    }
 
-	return 0;
+    return 0;
 }
