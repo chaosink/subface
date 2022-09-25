@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     int render_mode = 2;
     Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
     Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
-    Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, true);
+    Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
     Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
     int level = 0, level_old = 0;
     bool flat = false, flat_old = false;

@@ -52,7 +52,7 @@ GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h)
 
 void OGL::InitGL(const char* vertex_file_path, const char* fragment_file_path, const char* geometry_file_path)
 {
-    // glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+    glClearColor(0.08f, 0.16f, 0.24f, 1.f);
     // glClearColor(0.f, 0.f, 0.f, 0.f);
     // glEnable(GL_BLEND);
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
