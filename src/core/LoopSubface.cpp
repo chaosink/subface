@@ -432,7 +432,10 @@ void LoopSubface::Tessellate3(int level)
         // Update `start_face` of new base vertexes as new sub-faces.
         for (auto& v : vertexes_base) {
             int vi = v->start_face->VertexId(v);
-            v->child->start_face = v->start_face->children[PREV(vi)];
+            if (v->start_face->neighbors[vi] == nullptr)
+                v->child->start_face = v->start_face->children[vi];
+            else
+                v->child->start_face = v->start_face->children[PREV(vi)];
         }
 
         // Update new sub-faces.
