@@ -31,13 +31,13 @@ class LoopSubface {
     static float LoopGamma(int valence);
     static glm::vec3 WeightOneRing(Vertex* vertex, float beta);
     static glm::vec3 WeightBoundary(Vertex* v, float beta);
-    static void BuildTopology(const std::vector<glm::vec3>& origin_vertexes, const std::vector<uint32_t>& origin_indexes,
+    static void BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
         std::vector<Vertex>& vertexes, std::vector<Face>& faces);
 
-    void ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base);
+    void ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes, const std::vector<Face*>& faces);
 
 public:
-    void BuildTopology(const std::vector<glm::vec3>& origin_vertexes, const std::vector<uint32_t>& origin_indexes);
+    void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
     void Subdivide(int level, bool flat);
     void Tesselate3(int level);
     void Tesselate4(int level);
