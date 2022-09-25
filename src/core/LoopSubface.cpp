@@ -92,8 +92,7 @@ float LoopSubface::LoopGamma(int valence)
 glm::vec3 LoopSubface::WeightOneRing(Vertex* v, float beta)
 {
     int valence = v->valence;
-    std::vector<glm::vec3> ring(valence);
-    v->OneRing(ring);
+    std::vector<glm::vec3> ring = v->OneRing();
     glm::vec3 p = (1 - valence * beta) * v->p;
     for (int i = 0; i < valence; ++i)
         p += beta * ring[i];
@@ -269,8 +268,7 @@ void LoopSubface::Subdivide(int level, bool flat)
     for (Vertex* v : vertexes_base) {
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
         int valence = v->valence;
-        ring.resize(valence);
-        v->OneRing(ring);
+        ring = v->OneRing();
         if (!v->boundary) {
             for (int i = 0; i < valence; ++i) {
                 T += std::cos(2.f * PI * i / valence) * ring[i];

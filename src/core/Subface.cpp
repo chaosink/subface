@@ -12,8 +12,9 @@ void Vertex::ComputeValence()
     } while (f && f != start_face);
 }
 
-void Vertex::OneRing(std::vector<glm::vec3>& ring)
+std::vector<glm::vec3> Vertex::OneRing()
 {
+    std::vector<glm::vec3> ring(valence);
     uint32_t i = 0;
     if (boundary)
         ring[i++] = start_face->PrevVertex(this)->p;
@@ -22,6 +23,7 @@ void Vertex::OneRing(std::vector<glm::vec3>& ring)
         ring[i++] = f->NextVertex(this)->p;
         f = f->NextNeighbor(this);
     } while (f && f != start_face);
+    return ring;
 }
 
 std::vector<glm::vec3> Vertex::BoundaryNeighbors()
