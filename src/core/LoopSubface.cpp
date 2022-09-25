@@ -200,7 +200,7 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
     indexed_smooth_normals_ = std::move(smooth_normals);
 }
 
-// Same as Tesselate4(int level).
+// Same as Tesselate4(int level) if `flat==true`.
 void LoopSubface::Subdivide(int level, bool flat)
 {
     std::string func_name = fmt::format("LoopSubface::Subdivide(level={}, flat={})", level, flat);
