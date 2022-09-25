@@ -129,8 +129,8 @@ glm::mat4 Camera::Update(double time)
             glfwGetCursorPos(window_, &x, &y);
             if (x != x_ || y != y_) {
                 glm::vec3 offset = right * static_cast<float>(x - x_) - up * static_cast<float>(y - y_);
-                glm::vec3 axis = glm::cross(offset, direction);
-                m_ = glm::rotate(m_, glm::length(offset) / 100.f, axis);
+                glm::vec3 axis = glm::cross(offset, direction); // No need to normalize `axis`. `glm::rotate()` will do that.
+                m_ = glm::rotate(glm::mat4(1.f), glm::length(offset) / 100.f, axis) * m_;
                 x_ = x;
                 y_ = y;
             }
