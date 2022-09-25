@@ -41,15 +41,15 @@ class LoopSubface {
 
 public:
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
-    // Same as Tesselate4(int level) if `flat==true`.
+    // Same as Tessellate4(int level) if `flat==true`.
     // `compute_limit` matters only when `flat==false`.
     void Subdivide(int level, bool flat, bool compute_limit);
     // Same as Subdivide(int level, bool flat=true).
-    void Tesselate4(int level);
-    // Another 1-to-4 triangle tesselation pattern than `Tesselate4()`.
-    void Tesselate4_1(int level);
-    // 1-to-3 triangle tesselation by connecting the center to each vertex.
-    void Tesselate3(int level);
+    void Tessellate4(int level);
+    // Another 1-to-4 triangle tessellation pattern than `Tessellate4()`.
+    void Tessellate4_1(int level);
+    // 1-to-3 triangle tessellation by connecting the center to each vertex.
+    void Tessellate3(int level);
     // Reduces the number of triangles in the mesh.
     // if `sloppy==false`:
     //     Attempte to preserve mesh appearance as much as possible.

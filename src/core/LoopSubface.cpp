@@ -358,9 +358,9 @@ void LoopSubface::Subdivide(int level, bool flat, bool compute_limit)
     spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
-void LoopSubface::Tesselate3(int level)
+void LoopSubface::Tessellate3(int level)
 {
-    std::string func_name = fmt::format("LoopSubface::Tesselate3(level={})", level);
+    std::string func_name = fmt::format("LoopSubface::Tessellate3(level={})", level);
     Timer timer(func_name);
 
     level_ = level;
@@ -381,7 +381,7 @@ void LoopSubface::Tesselate3(int level)
         for (auto& v : vertexes_base) {
             vertexes_new.emplace_back(mp.New<Vertex>());
             v->child = vertexes_new.back();
-            // `regular` is useless for tesselation.
+            // `regular` is useless for tessellation.
             v->child->p = v->p;
             v->child->boundary = v->boundary;
             v->child->valence = v->valence * 2 - (v->boundary ? 1 : 0);
@@ -443,9 +443,9 @@ void LoopSubface::Tesselate3(int level)
     spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
-void LoopSubface::Tesselate4(int level)
+void LoopSubface::Tessellate4(int level)
 {
-    std::string func_name = fmt::format("LoopSubface::Tesselate4(level={})", level);
+    std::string func_name = fmt::format("LoopSubface::Tessellate4(level={})", level);
     Timer timer(func_name);
 
     level_ = level;
@@ -548,9 +548,9 @@ void LoopSubface::Tesselate4(int level)
     spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
-void LoopSubface::Tesselate4_1(int level)
+void LoopSubface::Tessellate4_1(int level)
 {
-    std::string func_name = fmt::format("LoopSubface::Tesselate4_1(level={})", level);
+    std::string func_name = fmt::format("LoopSubface::Tessellate4_1(level={})", level);
     Timer timer(func_name);
 
     level_ = level;
@@ -571,7 +571,7 @@ void LoopSubface::Tesselate4_1(int level)
         for (auto& v : vertexes_base) {
             vertexes_new.emplace_back(mp.New<Vertex>());
             v->child = vertexes_new.back();
-            // `regular` is useless for tesselation.
+            // `regular` is useless for tessellation.
             v->child->p = v->p;
             v->child->boundary = v->boundary;
             v->child->valence = v->valence;

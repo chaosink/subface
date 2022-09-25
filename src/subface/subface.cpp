@@ -19,35 +19,35 @@ std::vector<ProcessingMethod> processing_methods = {
     { "SubdivideSmooth",
         [](LoopSubface& ls, int level) {
             ls.Subdivide(level, false, true);
-        } },
+        } }, // 1
     { "SubdivideSmoothNoLimit",
         [](LoopSubface& ls, int level) {
             ls.Subdivide(level, false, false);
-        } },
+        } }, // 2
     { "SubdivideFlat",
         [](LoopSubface& ls, int level) {
             ls.Subdivide(level, true, false);
-        } },
-    { "Tesselate4",
+        } }, // 3
+    { "Tessellate4",
         [](LoopSubface& ls, int level) {
-            ls.Tesselate4(level);
-        } },
-    { "Tesselate4_1",
+            ls.Tessellate4(level);
+        } }, // 4
+    { "Tessellate4_1",
         [](LoopSubface& ls, int level) {
-            ls.Tesselate4_1(level);
-        } },
-    { "Tesselate3",
+            ls.Tessellate4_1(level);
+        } }, // 5
+    { "Tessellate3",
         [](LoopSubface& ls, int level) {
-            ls.Tesselate3(level);
-        } },
+            ls.Tessellate3(level);
+        } }, // 6
     { "Decimate",
         [](LoopSubface& ls, int level) {
             ls.Decimate(level, false);
-        } },
+        } }, // 7
     { "DecimateSloppy",
         [](LoopSubface& ls, int level) {
             ls.Decimate(level, true);
-        } },
+        } }, // 8
 };
 
 int main(int argc, char* argv[])
