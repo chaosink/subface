@@ -268,3 +268,24 @@ void OGL::Update()
     std::string title = fmt::format("{} {:6.2f} FPS", window_title_, fps_.fps());
     glfwSetWindowTitle(window_, title.c_str());
 }
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#include <spdlog/spdlog.h>
+void OGL::SavePng(std::string file_name)
+{
+    int w, h;
+    glfwGetFramebufferSize(window_, &w, &h);
+    GLsizei n_channel = 3;
+    GLsizei stride = n_channel * w;
+    stride += (stride % 4) ? (4 - stride % 4) : 0;
+    GLsizei buffer_size = stride * h;
+    std::vector<char> buffer(buffer_size);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+    stbi_flip_vertically_on_write(true);
+    stbi_write_png(file_name.c_str(), w, h, n_channel, buffer.data(), stride);
+
+    spdlog::info("PNG saved: {}", file_name);
+}

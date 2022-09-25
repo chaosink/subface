@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
     Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
     Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
+    Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
     int level = 0, level_old = 0;
     bool flat = false, flat_old = false;
 
@@ -80,6 +81,16 @@ int main(int argc, char* argv[])
 
         export_mesh.Update([&]() {
             ls.Export(argv[1], enable_smooth_normal.state());
+        });
+
+        save_png.Update([&]() {
+            string file_name = argv[1];
+            file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level);
+            if (enable_smooth_normal.state())
+                file_name += "_smooth.png";
+            else
+                file_name += "_flat.png";
+            ogl.SavePng(file_name);
         });
         // clang-format on
 

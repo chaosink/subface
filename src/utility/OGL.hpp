@@ -37,6 +37,7 @@ public:
     void Clear(GLenum bit);
     void Draw();
     void Update();
+    void SavePng(std::string file_name);
     double time()
     {
         return glfwGetTime();
