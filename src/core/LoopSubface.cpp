@@ -657,11 +657,37 @@ void LoopSubface::Tessellate4_1(int level)
             for (int ci = 0; ci < 4; ++ci)
                 faces_base[fi]->children[ci] = faces_new[fi * 4 + ci] = mp.New<Face>();
 
+        // Use this `Edge` struct containing both neighbor triangles to perfectly fix the issue caused by the edges shared by more than 2 triangels.
+        // Before, on the edges shared by k>2 triangles, only 1 vertex are created, for which the valence is confusing and causes issues.
+        // Now (k+1)/2 vertexes are created on such edges. Each vertex is shared by at most 2 triangles.
+        // An imperfect workaround is that, do nothing if `edge2vertex` already has the edge. This causes smaller valence for vertexes with ID 2.
+        // So in `Vertex::OneRing()`, the lambda should return directly if `i >= valence` to prevent "vecter subscript out of range".
+        // With smaller valence, hence wrong "OneRing", wrong smooth normals will be computed. But it doesn't matter for tessellation.
+        struct Edge {
+            const Vertex* v[2];
+            const Face* f[2];
+
+            Edge(const Vertex* v0 = nullptr, const Vertex* v1 = nullptr, const Face* f0 = nullptr, const Face* f1 = nullptr)
+            {
+                v[0] = std::min(v0, v1);
+                v[1] = std::max(v0, v1);
+                f[0] = std::min(f0, f1);
+                f[1] = std::max(f0, f1);
+            }
+
+            bool operator<(const Edge& e2) const
+            {
+                const std::array<void*, 4>& a = *reinterpret_cast<const std::array<void*, 4>*>(this);
+                const std::array<void*, 4>& b = *reinterpret_cast<const std::array<void*, 4>*>(&e2);
+                return a < b;
+            }
+        };
+
         // Add a new sub-vertex on each edge.
         std::map<Edge, Vertex*> edge2vertex;
         for (auto& f : faces_base) {
             for (int vi = 0; vi < 3; ++vi) {
-                Edge e(f->v[vi], f->v[NEXT(vi)]);
+                Edge e(f->v[vi], f->v[NEXT(vi)], f, f->neighbors[vi]);
                 Vertex* v = edge2vertex[e];
                 if (!v) {
                     vertexes_new.emplace_back(mp.New<Vertex>());
@@ -700,17 +726,10 @@ void LoopSubface::Tessellate4_1(int level)
                 const Face* f1 = f->neighbors[1];
                 const Face* f2 = f->neighbors[2];
 
-                int f0_v0_id = f0 ? f0->VertexId(f->v[0]) : -1;
-                int f0_v1_id = f0 ? f0->VertexId(f->v[1]) : -1;
-                int f1_v1_id = f1 ? f1->VertexId(f->v[1]) : -1;
-                int f1_v2_id = f1 ? f1->VertexId(f->v[2]) : -1;
-                int f2_v2_id = f2 ? f2->VertexId(f->v[2]) : -1;
-                int f2_v0_id = f2 ? f2->VertexId(f->v[0]) : -1;
-
                 // Consider neighbor triangles with opposite normals.
-                bool o0 = f0 ? f0->neighbors[f0_v0_id] == f : false;
-                bool o1 = f1 ? f1->neighbors[f1_v1_id] == f : false;
-                bool o2 = f2 ? f2->neighbors[f2_v2_id] == f : false;
+                bool o0 = f->OppositeNeighbor(0);
+                bool o1 = f->OppositeNeighbor(1);
+                bool o2 = f->OppositeNeighbor(2);
 
                 auto vertex_id_to_child_id_pre = [](int i) {
                     switch (i) {
@@ -739,6 +758,13 @@ void LoopSubface::Tessellate4_1(int level)
                     }
                 };
 
+                int f0_v0_id = f0 ? f0->VertexId(f->v[0]) : -1;
+                int f0_v1_id = f0 ? f0->VertexId(f->v[1]) : -1;
+                int f1_v1_id = f1 ? f1->VertexId(f->v[1]) : -1;
+                int f1_v2_id = f1 ? f1->VertexId(f->v[2]) : -1;
+                int f2_v2_id = f2 ? f2->VertexId(f->v[2]) : -1;
+                int f2_v0_id = f2 ? f2->VertexId(f->v[0]) : -1;
+
                 f0 ? f->children[0]->neighbors[0] = f0->children[o0 ? vertex_id_to_child_id_nxt(f0_v0_id) : vertex_id_to_child_id_pre(f0_v0_id)] : 0;
                 f->children[0]->neighbors[1] = f->children[1];
                 f2 ? f->children[0]->neighbors[2] = f2->children[o2 ? vertex_id_to_child_id_pre(f2_v0_id) : vertex_id_to_child_id_nxt(f2_v0_id)] : 0;
@@ -761,7 +787,7 @@ void LoopSubface::Tessellate4_1(int level)
             {
                 Edge e[3];
                 for (int i = 0; i < 3; ++i)
-                    e[i] = { f->v[i], f->v[(i + 1) % 3] };
+                    e[i] = { f->v[i], f->v[NEXT(i)], f, f->neighbors[i] };
 
                 f->children[0]->v[0] = f->v[0]->child;
                 f->children[0]->v[1] = edge2vertex[e[0]];
