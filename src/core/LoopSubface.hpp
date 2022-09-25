@@ -31,9 +31,10 @@ class LoopSubface {
     static float LoopGamma(int valence);
     static glm::vec3 WeightOneRing(Vertex* vertex, float beta);
     static glm::vec3 WeightBoundary(Vertex* v, float beta);
-    void ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base);
     static void BuildTopology(const std::vector<glm::vec3>& origin_vertexes, const std::vector<uint32_t>& origin_indexes,
         std::vector<Vertex>& vertexes, std::vector<Face>& faces);
+
+    void ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base);
 
 public:
     void BuildTopology(const std::vector<glm::vec3>& origin_vertexes, const std::vector<uint32_t>& origin_indexes);
@@ -41,19 +42,20 @@ public:
     void Tesselate3(int level);
     void Tesselate4(int level);
     void Tesselate4_1(int level);
-    std::vector<glm::vec3>& vertex()
+
+    const std::vector<glm::vec3>& vertex() const
     {
         return unindexed_positions_;
     }
-    std::vector<glm::vec3>& normal_smooth()
+    const std::vector<glm::vec3>& normal_smooth() const
     {
         return unindexed_smooth_normals_;
     }
-    std::vector<glm::vec3>& normal_flat()
+    const std::vector<glm::vec3>& normal_flat() const
     {
         return unindexed_flat_normals_;
     }
-    void ExportObj(std::string file_name, bool smooth);
+    void ExportObj(std::string file_name, bool smooth) const;
 };
 
 }

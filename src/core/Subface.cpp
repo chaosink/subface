@@ -12,7 +12,7 @@ void Vertex::ComputeValence()
     } while (f && f != start_face);
 }
 
-std::vector<glm::vec3> Vertex::OneRing()
+std::vector<glm::vec3> Vertex::OneRing() const
 {
     std::vector<glm::vec3> ring(valence);
     uint32_t i = 0;
@@ -26,7 +26,7 @@ std::vector<glm::vec3> Vertex::OneRing()
     return ring;
 }
 
-std::vector<glm::vec3> Vertex::BoundaryNeighbors()
+std::vector<glm::vec3> Vertex::BoundaryNeighbors() const
 {
     assert(boundary == true);
     const Face *end_face = nullptr, *f = start_face;

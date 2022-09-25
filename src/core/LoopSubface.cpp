@@ -121,7 +121,7 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
     std::vector<glm::vec3> smooth_normals;
     smooth_normals.reserve(vertexes_base.size());
     std::vector<glm::vec3> ring;
-    for (Vertex* v : vertexes_base) {
+    for (const Vertex* v : vertexes_base) {
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
         int valence = v->valence;
         ring = v->OneRing();
@@ -680,7 +680,7 @@ void LoopSubface::Tesselate4_1(int level)
     spdlog::info("Tesselate4_1 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
-void LoopSubface::ExportObj(std::string file_name, bool smooth)
+void LoopSubface::ExportObj(std::string file_name, bool smooth) const
 {
     file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level_);
     if (smooth)
