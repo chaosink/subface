@@ -21,13 +21,14 @@ struct Vertex {
     Vertex* child = nullptr;
     bool regular = false;
     bool boundary = false;
+    uint32_t valence = 0;
 
     Vertex(const glm::vec3& p = glm::vec3(0, 0, 0))
         : p(p)
     {
     }
 
-    int Valence();
+    void ComputeValence();
     void OneRing(std::vector<glm::vec3>& ring);
     std::vector<glm::vec3> BoundaryNeighbors();
 };

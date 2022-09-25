@@ -58,15 +58,15 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const st
         } while (f && f != start_face_old);
         v->boundary = (f == nullptr);
 
-        int valence = v->Valence();
+        v->ComputeValence();
         //   \ /   //
         // -- . -- //
         //   / \   //
-        if (!v->boundary && valence == 6)
+        if (!v->boundary && v->valence == 6)
             v->regular = true;
         //   \ /   //
         // -- . -- //
-        else if (v->boundary && valence == 4)
+        else if (v->boundary && v->valence == 4)
             v->regular = true;
         else
             v->regular = false;
@@ -91,7 +91,7 @@ float LoopSubface::LoopGamma(int valence)
 
 glm::vec3 LoopSubface::WeightOneRing(Vertex* v, float beta)
 {
-    int valence = v->Valence();
+    int valence = v->valence;
     std::vector<glm::vec3> ring(valence);
     v->OneRing(ring);
     glm::vec3 p = (1 - valence * beta) * v->p;
@@ -131,6 +131,7 @@ void LoopSubface::Subdivide(int level, bool flat)
             v->child = vertexes_new.back();
             v->child->regular = v->regular;
             v->child->boundary = v->boundary;
+            v->child->valence = v->valence;
         }
         // Create new faces here for the convinience of updating new vertexes' `start_face` ptr.
         // After updating new vertexes, new faces are updated.
@@ -152,7 +153,7 @@ void LoopSubface::Subdivide(int level, bool flat)
                         v->child->p = WeightOneRing(v, 1.f / 16.f);
                     // (1-Valence*Beta) for the center vertex, (Beta) for each of the Valence neighbor vertexes.
                     else
-                        v->child->p = WeightOneRing(v, Beta(v->Valence()));
+                        v->child->p = WeightOneRing(v, Beta(v->valence));
                 } else {
                     //      0 ... 0      //
                     //       \.../       //
@@ -164,22 +165,23 @@ void LoopSubface::Subdivide(int level, bool flat)
 
         // Add a new sub-vertex on each edge.
         std::map<Edge, Vertex*> edge2vertex;
-        for (auto& face : faces_base) {
+        for (auto& f : faces_base) {
             for (int vi = 0; vi < 3; ++vi) {
-                Edge edge(face->v[vi], face->v[NEXT(vi)]);
-                Vertex* vertex = edge2vertex[edge];
-                if (!vertex) {
+                Edge e(f->v[vi], f->v[NEXT(vi)]);
+                Vertex* v = edge2vertex[e];
+                if (!v) {
                     vertexes_new.emplace_back(mp.New<Vertex>());
-                    vertex = vertexes_new.back();
+                    v = vertexes_new.back();
                     // All new sub-vertexes are regular no matter they are on boundary edges or not.
                     // That's why we have this concept of "regular" and special processing for regular vertexes.
-                    vertex->regular = true;
-                    vertex->boundary = (face->neighbors[vi] == nullptr);
-                    vertex->start_face = face->children[vi];
+                    v->regular = true;
+                    v->boundary = (f->neighbors[vi] == nullptr);
+                    v->valence = v->boundary ? 4 : 6;
+                    v->start_face = f->children[vi];
 
-                    if (flat || vertex->boundary) {
-                        vertex->p = 0.5f * edge.v[0]->p;
-                        vertex->p += 0.5f * edge.v[1]->p;
+                    if (flat || v->boundary) {
+                        v->p = 0.5f * e.v[0]->p;
+                        v->p += 0.5f * e.v[1]->p;
                     } else {
                         //     .   //
                         //    / \  //
@@ -192,14 +194,14 @@ void LoopSubface::Subdivide(int level, bool flat)
                         // 3/8 - 3/8 //
                         //    \ /    //
                         //    1/8    //
-                        vertex->p = 3.f / 8.f * edge.v[0]->p;
-                        vertex->p += 3.f / 8.f * edge.v[1]->p;
-                        vertex->p += 1.f / 8.f
-                            * face->OtherVertex(edge.v[0], edge.v[1])->p;
-                        vertex->p += 1.f / 8.f
-                            * face->neighbors[vi]->OtherVertex(edge.v[0], edge.v[1])->p;
+                        v->p = 3.f / 8.f * e.v[0]->p;
+                        v->p += 3.f / 8.f * e.v[1]->p;
+                        v->p += 1.f / 8.f
+                            * f->OtherVertex(e.v[0], e.v[1])->p;
+                        v->p += 1.f / 8.f
+                            * f->neighbors[vi]->OtherVertex(e.v[0], e.v[1])->p;
                     }
-                    edge2vertex[edge] = vertex;
+                    edge2vertex[e] = v;
                 }
             }
         }
@@ -254,7 +256,7 @@ void LoopSubface::Subdivide(int level, bool flat)
             if (vertexes_base[i]->boundary)
                 limit[i] = WeightBoundary(vertexes_base[i], 1.f / 5.f);
             else
-                limit[i] = WeightOneRing(vertexes_base[i], LoopGamma(vertexes_base[i]->Valence()));
+                limit[i] = WeightOneRing(vertexes_base[i], LoopGamma(vertexes_base[i]->valence));
         }
         for (size_t i = 0; i < vertexes_base.size(); ++i)
             vertexes_base[i]->p = limit[i];
@@ -266,7 +268,7 @@ void LoopSubface::Subdivide(int level, bool flat)
     std::vector<glm::vec3> ring;
     for (Vertex* v : vertexes_base) {
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
-        int valence = v->Valence();
+        int valence = v->valence;
         ring.resize(valence);
         v->OneRing(ring);
         if (!v->boundary) {

@@ -2,15 +2,14 @@
 
 namespace subface {
 
-int Vertex::Valence()
+void Vertex::ComputeValence()
 {
-    int valence = boundary ? 1 : 0;
+    valence = boundary ? 1 : 0;
     const Face* f = start_face;
     do {
         ++valence;
         f = f->NextNeighbor(this);
     } while (f && f != start_face);
-    return valence;
 }
 
 void Vertex::OneRing(std::vector<glm::vec3>& ring)
