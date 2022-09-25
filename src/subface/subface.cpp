@@ -11,6 +11,37 @@ using namespace std;
 #include "LoopSubface.hpp"
 using namespace subface;
 
+struct ProcessingMethod {
+    std::string name;
+    std::function<void(LoopSubface& ls, int level)> process;
+};
+std::vector<ProcessingMethod> processing_methods = {
+    { "SubdivideSmooth",
+        [](LoopSubface& ls, int level) {
+            ls.Subdivide(level, false);
+        } },
+    { "SubdivideFlat",
+        [](LoopSubface& ls, int level) {
+            ls.Subdivide(level, true);
+        } },
+    { "Tesselate4",
+        [](LoopSubface& ls, int level) {
+            ls.Tesselate4(level);
+        } },
+    { "Tesselate4_1",
+        [](LoopSubface& ls, int level) {
+            ls.Tesselate4_1(level);
+        } },
+    { "Tesselate3",
+        [](LoopSubface& ls, int level) {
+            ls.Tesselate3(level);
+        } },
+    { "Decimate",
+        [](LoopSubface& ls, int level) {
+            ls.Decimate(level);
+        } },
+};
+
 int main(int argc, char* argv[])
 {
     bool cmd_mode = false;
@@ -50,7 +81,7 @@ int main(int argc, char* argv[])
     Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
     Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
     int level = 0, level_old = -1;
-    bool flat = false, flat_old = true;
+    int method = 0, method_old = -1;
 
     if (cmd_mode) {
         level = cmd_level;
@@ -108,19 +139,17 @@ int main(int argc, char* argv[])
         // clang-format on
 
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
-            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS) {
-                level = key - GLFW_KEY_0;
-                flat = glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
-            }
+            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
+                if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
+                    if (GLFW_KEY_1 <= key && key <= GLFW_KEY_0 + processing_methods.size())
+                        method = (key - GLFW_KEY_1) % static_cast<int>(processing_methods.size());
+                } else
+                    level = key - GLFW_KEY_0;
 
-        if (level != level_old || flat != flat_old) {
+        if (level != level_old || method != method_old) {
             level_old = level;
-            flat_old = flat;
-            // ls.Subdivide(level, flat);
-            // ls.Tesselate3(level);
-            // ls.Tesselate4(level);
-            // ls.Tesselate4_1(level);
-            ls.Decimate(level);
+            method_old = method;
+            processing_methods[method].process(ls, level);
             ogl.Vertex(ls.vertex());
             if (enable_smooth_normal.state())
                 ogl.Normal(ls.normal_smooth());
