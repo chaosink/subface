@@ -50,10 +50,12 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const st
 
     for (int i = 0; i < n_vertexes; ++i) {
         Vertex* v = &vertexes_[i];
-        const Face* f = v->start_face;
+        const Face *f = v->start_face, *start_face_old = v->start_face;
         do {
-            f = f->NextNeighbor(v);
-        } while (f && f != v->start_face);
+            // Update `start_face`, especially for boundary vertexes.
+            v->start_face = f;
+            f = f->PrevNeighbor(v);
+        } while (f && f != start_face_old);
         v->boundary = (f == nullptr);
 
         int valence = v->Valence();
@@ -173,7 +175,7 @@ void LoopSubface::Subdivide(int level, bool flat)
                     // That's why we have this concept of "regular" and special processing for regular vertexes.
                     vertex->regular = true;
                     vertex->boundary = (face->neighbors[vi] == nullptr);
-                    vertex->start_face = face->children[3];
+                    vertex->start_face = face->children[vi];
 
                     if (flat || vertex->boundary) {
                         vertex->p = 0.5f * edge.v[0]->p;
