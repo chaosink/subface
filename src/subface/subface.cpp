@@ -50,6 +50,13 @@ std::vector<ProcessingMethod> processing_methods = {
         } }, // 8
 };
 
+enum RenderMode {
+    RenderMode_FacesWireframe,
+    RenderMode_Faces,
+    RenderMode_Wireframe,
+    RenderMode_Count,
+};
+
 int main(int argc, char* argv[])
 {
     bool cmd_mode = false;
@@ -82,7 +89,7 @@ int main(int argc, char* argv[])
     ogl.Normal(ls.normal_flat());
 
     Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
-    int render_mode = 2;
+    RenderMode render_mode = RenderMode_FacesWireframe;
     Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
     Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
@@ -108,7 +115,7 @@ int main(int argc, char* argv[])
 
         // clang-format off
         switch_render_mode.Update([&]() {
-            render_mode = (render_mode + 1) % 3;
+            render_mode = static_cast<RenderMode>((render_mode + 1) % RenderMode_Count);
         });
 
         enable_smooth_normal.Update([&]() {
@@ -169,15 +176,15 @@ int main(int argc, char* argv[])
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
-        } else if (render_mode == 1) {
-            ogl.Uniform("wireframe", 0);
+            ogl.Uniform("wireframe", 1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
-        } else if (render_mode == 2) {
+        } else if (render_mode == 1) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
-            ogl.Uniform("wireframe", 1);
+        } else if (render_mode == 2) {
+            ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
         }
