@@ -48,16 +48,23 @@ target_link_libraries(subface
 )
 
 if(MSVC)
-	set(shader_dir ${PROJECT_BINARY_DIR}/$<CONFIG>/shader)
+	add_custom_target(copy_shader_files ALL
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${PROJECT_SOURCE_DIR}/src/shader
+		${PROJECT_BINARY_DIR}/$<CONFIG>/shader
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${PROJECT_SOURCE_DIR}/src/shader
+		${PROJECT_BINARY_DIR}/shader
+		COMMENT "Copying shader files"
+	)
 else()
-	set(shader_dir ${PROJECT_BINARY_DIR}/shader)
+	add_custom_target(copy_shader_files ALL
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${PROJECT_SOURCE_DIR}/src/shader
+		${PROJECT_BINARY_DIR}/shader
+		COMMENT "Copying shader files"
+	)
 endif()
-add_custom_target(copy_shader_files ALL
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	${PROJECT_SOURCE_DIR}/src/shader
-	${shader_dir}
-	COMMENT "Copying shader files"
-)
 add_dependencies(subface copy_shader_files)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glew-2.2.0)
