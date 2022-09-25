@@ -203,7 +203,8 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
 // Same as Tesselate4(int level).
 void LoopSubface::Subdivide(int level, bool flat)
 {
-    Timer timer("LoopSubface::Subdivide()");
+    std::string func_name = fmt::format("LoopSubface::Subdivide(level={}, flat={})", level, flat);
+    Timer timer(func_name);
 
     level_ = level;
 
@@ -345,12 +346,13 @@ void LoopSubface::Subdivide(int level, bool flat)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Subdivision level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::Tesselate3(int level)
 {
-    Timer timer("LoopSubface::Tesselate3()");
+    std::string func_name = fmt::format("LoopSubface::Tesselate3(level={})", level);
+    Timer timer(func_name);
 
     level_ = level;
 
@@ -429,13 +431,14 @@ void LoopSubface::Tesselate3(int level)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Tesselate3 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 // Same as Subdivide(int level, bool flat = true).
 void LoopSubface::Tesselate4(int level)
 {
-    Timer timer("LoopSubface::Tesselate4()");
+    std::string func_name = fmt::format("LoopSubface::Tesselate4(level={})", level);
+    Timer timer(func_name);
 
     level_ = level;
 
@@ -534,12 +537,13 @@ void LoopSubface::Tesselate4(int level)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Tesselate4 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::Tesselate4_1(int level)
 {
-    Timer timer("LoopSubface::Tesselate4_1()");
+    std::string func_name = fmt::format("LoopSubface::Tesselate4_1(level={})", level);
+    Timer timer(func_name);
 
     level_ = level;
 
@@ -687,12 +691,13 @@ void LoopSubface::Tesselate4_1(int level)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Tesselate4_1 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::Decimate(int level)
 {
-    Timer timer("LoopSubface::Decimate()");
+    std::string func_name = fmt::format("LoopSubface::Decimate(level={})", level);
+    Timer timer(func_name);
 
     level_ = level;
 
@@ -725,11 +730,14 @@ void LoopSubface::Decimate(int level)
         faces_ptr[i] = &faces[i];
     ComputeNormalsAndPositions(vertexes_ptr, faces_ptr);
 
-    spdlog::info("Decimate level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::ExportObj(std::string file_name, bool smooth) const
 {
+    std::string func_name = fmt::format("LoopSubface::ExportObj(file_name={}, smooth={})", file_name, smooth);
+    Timer timer(func_name);
+
     file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level_);
     if (smooth)
         file_name += "_smooth.obj";
@@ -757,7 +765,7 @@ void LoopSubface::ExportObj(std::string file_name, bool smooth) const
                 << vertex_indexes_[i + 2] + 1 << "//" << flat_normal_indexes_[i + 2] + 1 << std::endl;
     }
 
-    spdlog::info("Mesh exported: {}", file_name);
+    spdlog::info("{}: Mesh exported: {}", func_name, file_name);
 }
 
 }
