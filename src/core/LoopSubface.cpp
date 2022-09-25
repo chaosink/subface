@@ -11,27 +11,28 @@
 
 namespace subface {
 
-void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes)
+void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
+    std::vector<Vertex>& vertexes, std::vector<Face>& faces)
 {
-    size_t n_vertexes = vertexes.size();
+    size_t n_vertexes = positions.size();
     size_t n_faces = indexes.size() / 3;
 
-    vertexes_.resize(n_vertexes);
+    vertexes.resize(n_vertexes);
     for (int i = 0; i < n_vertexes; ++i)
-        vertexes_[i].p = vertexes[i];
+        vertexes[i].p = positions[i];
 
-    faces_.resize(n_faces);
+    faces.resize(n_faces);
     for (int i = 0; i < n_faces; ++i)
         for (int j = 0; j < 3; j++) {
-            faces_[i].v[j] = &vertexes_[indexes[i * 3 + j]];
+            faces[i].v[j] = &vertexes[indexes[i * 3 + j]];
             // `start_face` of the same vertex may be updated multiple times.
-            vertexes_[indexes[i * 3 + j]].start_face = &faces_[i];
+            vertexes[indexes[i * 3 + j]].start_face = &faces[i];
         }
 
     // A local variable for temp usage.
     std::set<Edge> edges;
     for (int i = 0; i < n_faces; ++i) {
-        Face* f = &faces_[i];
+        Face* f = &faces[i];
         for (int vi = 0; vi < 3; ++vi) {
             int v0 = vi, v1 = NEXT(vi);
             Edge e(f->v[v0], f->v[v1]);
@@ -49,7 +50,7 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const st
     }
 
     for (int i = 0; i < n_vertexes; ++i) {
-        Vertex* v = &vertexes_[i];
+        Vertex* v = &vertexes[i];
         const Face *f = v->start_face, *start_face_old = v->start_face;
         do {
             // Update `start_face`, especially for boundary vertexes.
@@ -71,6 +72,14 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const st
         else
             v->regular = false;
     }
+}
+
+void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes)
+{
+    origin_positions_ = positions;
+    origin_indexes_ = indexes;
+
+    BuildTopology(origin_positions_, origin_indexes_, vertexes_, faces_);
 }
 
 // Only for non-boundary vertexes.
@@ -106,7 +115,7 @@ glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
     return p;
 }
 
-void LoopSubface::ComputeNormalsAndVertexes(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base)
+void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base)
 {
     // Compute vertexes' smooth normals.
     std::vector<glm::vec3> smooth_normals;
@@ -147,9 +156,9 @@ void LoopSubface::ComputeNormalsAndVertexes(const std::vector<Vertex*>& vertexes
     for (size_t i = 0; i < vertexes_base.size(); ++i)
         vertex2index[vertexes_base[i]] = static_cast<int>(i);
 
-    indexed_vertexes_.resize(vertexes_base.size());
+    indexed_positions_.resize(vertexes_base.size());
     for (size_t i = 0; i < vertexes_base.size(); ++i)
-        indexed_vertexes_[i] = vertexes_base[i]->p;
+        indexed_positions_[i] = vertexes_base[i]->p;
 
     vertex_indexes_.resize(faces_base.size() * 3);
     smooth_normal_indexes_.resize(faces_base.size() * 3);
@@ -162,7 +171,7 @@ void LoopSubface::ComputeNormalsAndVertexes(const std::vector<Vertex*>& vertexes
     indexed_flat_normals_.resize(faces_base.size());
 
     // Unindexd vertexes and normals.
-    unindexed_vertexes_.resize(faces_base.size() * 3);
+    unindexed_positions_.resize(faces_base.size() * 3);
     unindexed_smooth_normals_.resize(faces_base.size() * 3);
     unindexed_flat_normals_.resize(faces_base.size() * 3);
     for (size_t i = 0; i < faces_base.size(); i++) {
@@ -170,7 +179,7 @@ void LoopSubface::ComputeNormalsAndVertexes(const std::vector<Vertex*>& vertexes
             faces_base[i]->v[1]->p - faces_base[i]->v[0]->p,
             faces_base[i]->v[2]->p - faces_base[i]->v[1]->p));
         for (int j = 0; j < 3; j++) {
-            unindexed_vertexes_[i * 3 + j] = faces_base[i]->v[j]->p;
+            unindexed_positions_[i * 3 + j] = faces_base[i]->v[j]->p;
             unindexed_smooth_normals_[i * 3 + j] = smooth_normals[vertex2index[faces_base[i]->v[j]]];
             unindexed_flat_normals_[i * 3 + j] = normal_flat;
             flat_normal_indexes_[i * 3 + j] = static_cast<int>(i);
@@ -324,9 +333,9 @@ void LoopSubface::Subdivide(int level, bool flat)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormalsAndVertexes(vertexes_base, faces_base);
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Subdivision level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
+    spdlog::info("Subdivision level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::Tesselate3(int level)
@@ -408,9 +417,9 @@ void LoopSubface::Tesselate3(int level)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormalsAndVertexes(vertexes_base, faces_base);
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Tesselate3 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
+    spdlog::info("Tesselate3 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 // Same as Subdivide(int level, bool flat = true).
@@ -513,9 +522,9 @@ void LoopSubface::Tesselate4(int level)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormalsAndVertexes(vertexes_base, faces_base);
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Tesselate4 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
+    spdlog::info("Tesselate4 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::Tesselate4_1(int level)
@@ -666,9 +675,9 @@ void LoopSubface::Tesselate4_1(int level)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormalsAndVertexes(vertexes_base, faces_base);
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("Tesselate4 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
+    spdlog::info("Tesselate4_1 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::ExportObj(std::string file_name, bool smooth)
@@ -680,7 +689,7 @@ void LoopSubface::ExportObj(std::string file_name, bool smooth)
         file_name += "_flat.obj";
     std::ofstream ofs(file_name);
 
-    for (auto& v : indexed_vertexes_)
+    for (auto& v : indexed_positions_)
         ofs << "v " << v.x << " " << v.y << " " << v.z << std::endl;
     if (smooth) {
         for (auto& n : indexed_smooth_normals_)
