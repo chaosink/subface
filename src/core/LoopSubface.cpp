@@ -53,13 +53,21 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
 
     for (int i = 0; i < n_vertexes; ++i) {
         Vertex* v = &vertexes[i];
-        const Face *f = v->start_face, *start_face_old = v->start_face;
+        const Face *f = v->start_face, *f_last = nullptr;
         do {
+            const Face* fn = f->PrevNeighbor(v);
+            // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `fn == f_last`.
+            // Besides, traversal here can stop as long as `fn == nullptr`. This is the reason of checking `fn`.
+            if (fn && fn == f_last)
+                fn = f->NextNeighbor(v);
+            f_last = f;
+            f = fn;
+        } while (f && f != v->start_face);
+        if (f == nullptr) {
+            v->boundary = true;
             // Update `start_face`, especially for boundary vertexes.
-            v->start_face = f;
-            f = f->PrevNeighbor(v);
-        } while (f && f != start_face_old);
-        v->boundary = (f == nullptr);
+            v->start_face = f_last;
+        }
 
         v->ComputeValence();
         //   \ /   //

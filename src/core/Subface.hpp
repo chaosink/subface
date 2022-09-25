@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -31,6 +32,7 @@ struct Vertex {
     void ComputeValence();
     std::vector<glm::vec3> OneRing() const;
     std::vector<glm::vec3> BoundaryNeighbors() const;
+    const Face* TraverseFaces(const std::function<void(const Face*)>& func) const;
 };
 
 struct Edge {
