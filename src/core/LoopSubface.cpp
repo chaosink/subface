@@ -106,7 +106,7 @@ glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
     return p;
 }
 
-void LoopSubface::ComputeNormals(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base)
+void LoopSubface::ComputeNormalsAndVertexes(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base)
 {
     // Compute vertexes' smooth normals.
     std::vector<glm::vec3> smooth_normals;
@@ -324,7 +324,7 @@ void LoopSubface::Subdivide(int level, bool flat)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormals(vertexes_base, faces_base);
+    ComputeNormalsAndVertexes(vertexes_base, faces_base);
 
     spdlog::info("Subdivision level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
@@ -408,7 +408,7 @@ void LoopSubface::Tesselate3(int level)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormals(vertexes_base, faces_base);
+    ComputeNormalsAndVertexes(vertexes_base, faces_base);
 
     spdlog::info("Tesselate3 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
@@ -513,7 +513,7 @@ void LoopSubface::Tesselate4(int level)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormals(vertexes_base, faces_base);
+    ComputeNormalsAndVertexes(vertexes_base, faces_base);
 
     spdlog::info("Tesselate4 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
@@ -666,7 +666,7 @@ void LoopSubface::Tesselate4_1(int level)
         faces_base = std::move(faces_new);
     }
 
-    ComputeNormals(vertexes_base, faces_base);
+    ComputeNormalsAndVertexes(vertexes_base, faces_base);
 
     spdlog::info("Tesselate4 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
