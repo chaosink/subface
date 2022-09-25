@@ -45,17 +45,18 @@ Camera::Camera(GLFWwindow* window, int window_w, int window_h, double time)
 
 glm::mat4 Camera::Update(double time)
 {
-    // fix_.Update([this]{ // call this lambda when toggle `fix_` turn on
-    // 	v_ = glm::mat4(
-    // 		0.881391, 0.233078, -0.410883, 0.000000,
-    // 		0.000000, 0.869800, 0.493404, 0.000000,
-    // 		0.472388, -0.434882, 0.766634, 0.000000,
-    // 		0.174693, -0.002130, -3.134580, 1.000000
-    // 	);
-    // }, [this]{ // call this lambda when toggle `fix_` turn off
-    // 	glfwGetCursorPos(window_, &x_, &y_);
-    // });
-    // if(fix_.state()) return mvp_;
+    fix_.Update([this] { // call this lambda when toggle `fix_` turn on
+        mvp_ = glm::mat4(
+            0.220098, 0.049534, 0.115394, 0.115371,
+            0.000000, 0.475384, -0.035026, -0.035019,
+            0.159132, -0.068511, -0.159604, -0.159572,
+            0.034398, 0.045213, 0.534022, 0.553913);
+    },
+        [this] { // call this lambda when toggle `fix_` turn off
+            glfwGetCursorPos(window_, &x_, &y_);
+        });
+    if (fix_.state())
+        return mvp_;
 
     float delta_time = static_cast<float>(time - time_);
     time_ = time;
