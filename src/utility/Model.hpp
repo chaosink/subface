@@ -16,7 +16,7 @@ class Model {
     std::vector<glm::vec2> uv_;
 
     std::vector<glm::vec3> indexed_vertex_;
-    std::vector<int> index_;
+    std::vector<uint32_t> index_;
 
 public:
     Model(GLFWwindow* window, const char* file_name);
@@ -41,7 +41,7 @@ public:
     {
         return indexed_vertex_;
     }
-    std::vector<int>& index()
+    std::vector<uint32_t>& index()
     {
         return index_;
     }

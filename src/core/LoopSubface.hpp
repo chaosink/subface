@@ -29,7 +29,7 @@ class LoopSubface {
     static glm::vec3 WeightBoundary(Vertex* v, float beta);
 
 public:
-    void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<int>& indexes);
+    void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
     void Subdivide(int level, bool flat);
     std::vector<glm::vec3>& vertex()
     {

@@ -11,7 +11,7 @@
 
 namespace subface {
 
-void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<int>& indexes)
+void LoopSubface::BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes)
 {
     size_t n_vertexes = vertexes.size();
     size_t n_faces = indexes.size() / 3;
