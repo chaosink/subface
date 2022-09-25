@@ -92,7 +92,6 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
     BuildTopology(origin_positions_, origin_indexes_, vertexes_, faces_);
 }
 
-// Only for non-boundary vertexes.
 float LoopSubface::Beta(int valence)
 {
     // Min valence for non-boundary vertexes is 3.
@@ -200,7 +199,6 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
     indexed_smooth_normals_ = std::move(smooth_normals);
 }
 
-// Same as Tesselate4(int level) if `flat==true`.
 void LoopSubface::Subdivide(int level, bool flat)
 {
     std::string func_name = fmt::format("LoopSubface::Subdivide(level={}, flat={})", level, flat);
@@ -434,7 +432,6 @@ void LoopSubface::Tesselate3(int level)
     spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
-// Same as Subdivide(int level, bool flat = true).
 void LoopSubface::Tesselate4(int level)
 {
     std::string func_name = fmt::format("LoopSubface::Tesselate4(level={})", level);
@@ -703,11 +700,6 @@ size_t meshopt_simplify_func(bool sloppy, Args... args)
         return meshopt_simplify(args...);
 }
 
-// Reduces the number of triangles in the mesh.
-// sloppy==false
-//     Attempte to preserve mesh appearance as much as possible.
-// sloppy==true
-//     Sacrifice mesh appearance for simplification performance.
 void LoopSubface::Decimate(int level, bool sloppy)
 {
     std::string func_name = fmt::format("LoopSubface::Decimate(level={}, sloppy={})", level, sloppy);

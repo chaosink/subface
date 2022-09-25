@@ -27,9 +27,12 @@ class LoopSubface {
     std::vector<int> smooth_normal_indexes_;
     std::vector<int> flat_normal_indexes_;
 
+    // Only for non-boundary vertexes.
     static float Beta(int valence);
+    // Only for non-boundary vertexes.
     static float LoopGamma(int valence);
     static glm::vec3 WeightOneRing(Vertex* vertex, float beta);
+    // Only for boundary vertexes.
     static glm::vec3 WeightBoundary(Vertex* v, float beta);
     static void BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
         std::vector<Vertex>& vertexes, std::vector<Face>& faces);
@@ -38,10 +41,19 @@ class LoopSubface {
 
 public:
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
+    // Same as Tesselate4(int level) if `flat==true`.
     void Subdivide(int level, bool flat);
-    void Tesselate3(int level);
+    // Same as Subdivide(int level, bool flat=true).
     void Tesselate4(int level);
+    // Another 1-to-4 triangle tesselation pattern than `Tesselate4()`.
     void Tesselate4_1(int level);
+    // 1-to-3 triangle tesselation by connecting the center to each vertex.
+    void Tesselate3(int level);
+    // Reduces the number of triangles in the mesh.
+    // if `sloppy==false`:
+    //     Attempte to preserve mesh appearance as much as possible.
+    // else:
+    //     Sacrifice mesh appearance for simplification performance.
     void Decimate(int level, bool sloppy);
 
     const std::vector<glm::vec3>& vertex() const
