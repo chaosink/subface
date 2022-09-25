@@ -778,9 +778,9 @@ size_t meshopt_simplify_func(bool sloppy, Args... args)
         return meshopt_simplify(args...);
 }
 
-void LoopSubface::Decimate(int level, bool sloppy)
+void LoopSubface::MeshoptDecimate(int level, bool sloppy)
 {
-    std::string func_name = fmt::format("LoopSubface::Decimate(level={}, sloppy={})", level, sloppy);
+    std::string func_name = fmt::format("LoopSubface::MeshoptDecimate(level={}, sloppy={})", level, sloppy);
     Timer timer(func_name);
 
     level_ = level;

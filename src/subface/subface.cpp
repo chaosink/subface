@@ -40,13 +40,13 @@ std::vector<ProcessingMethod> processing_methods = {
         [](LoopSubface& ls, int level) {
             ls.Tessellate3(level);
         } }, // Key 6
-    { "Decimate",
+    { "MeshoptDecimate",
         [](LoopSubface& ls, int level) {
-            ls.Decimate(level, false);
+            ls.MeshoptDecimate(level, false);
         } }, // Key 7
-    { "DecimateSloppy",
+    { "MeshoptDecimateSloppy",
         [](LoopSubface& ls, int level) {
-            ls.Decimate(level, true);
+            ls.MeshoptDecimate(level, true);
         } }, // Key 8
 };
 

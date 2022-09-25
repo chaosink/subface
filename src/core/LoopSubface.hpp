@@ -50,12 +50,13 @@ public:
     void Tessellate4_1(int level);
     // 1-to-3 triangle tessellation by connecting the center to each vertex.
     void Tessellate3(int level);
+    // Use the implementations from https://github.com/zeux/meshoptimizer
     // Reduces the number of triangles in the mesh.
     // if `sloppy==false`:
     //     Attempte to preserve mesh appearance as much as possible.
     // else:
     //     Sacrifice mesh appearance for simplification performance.
-    void Decimate(int level, bool sloppy);
+    void MeshoptDecimate(int level, bool sloppy);
 
     const std::vector<glm::vec3>& vertex() const
     {
