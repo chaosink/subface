@@ -16,7 +16,7 @@ class Camera {
     int window_w_, window_h_;
 
     const glm::mat4 m_init_ = glm::scale(glm::mat4(1.f), glm::vec3(0.2f));
-    glm::mat4 m_ = m_init_, v_, p_, mv_, mvp_;
+    glm::mat4 m_ = m_init_, v_ { 1.f }, p_ { 1.f }, mv_ { 1.f }, mvp_ { 1.f };
 
     const glm::vec3 position_init_ = glm::vec3(0.f, 0.f, 1.f);
     const float angle_horizontal_init_ = static_cast<float>(PI);
@@ -33,8 +33,8 @@ class Camera {
     float mouse_turn_factor_ = 0.002f;
     float scroll_speed_ = 2.f;
 
-    double time_;
-    double x_, y_;
+    double time_ = 0;
+    double x_ = 0, y_ = 0;
 
     Toggle fix_ = Toggle(window_, GLFW_KEY_F, false);
     Toggle print_vp_ = Toggle(window_, GLFW_KEY_P, false);
