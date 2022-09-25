@@ -59,6 +59,8 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
         Vertex* v = &vertexes[i];
 
         const Face *f = v->start_face, *f_last = nullptr;
+
+        /* Use `f_next == f_last` to detect opposite neighbor triangles. */
         do {
             const Face* fn = f->PrevNeighbor(v);
             // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `fn == f_last`.
@@ -68,6 +70,20 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
             f_last = f;
             f = fn;
         } while (f && f != v->start_face);
+
+        /* Use `OppositeNeighbor()` to detect opposite neighbor triangles. */
+        // bool f_opposite = false; // Always treat the first face as non-opposite.
+        // do {
+        //     int fn_id = PREV(f->VertexId(v));
+        //     // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `f_opposite`.
+        //     if (f_opposite)
+        //         fn_id = NEXT(fn_id);
+        //     const Face* fn = f->neighbors[fn_id];
+        //     f_opposite ^= f->OppositeNeighbor(fn_id);
+        //     f_last = f;
+        //     f = fn;
+        // } while (f && f != v->start_face);
+
         if (f == nullptr) {
             v->boundary = true;
             // Update `start_face`, especially for boundary vertexes.
@@ -432,10 +448,7 @@ void LoopSubface::Tessellate3(int level)
                     const Face* fn = f->neighbors[ci];
                     if (fn) {
                         int fn_ci = fn->VertexId(f->v[ci]);
-                        // `fn->neighbors[fn_ci] == f` implies neighbor triangles with opposite normals,
-                        // except the really rare case `fn->neighbors[PREV(fn_ci)] == f`,
-                        // which means 2 triangles sharing the same 3 vertexes.
-                        if (fn->neighbors[fn_ci] == f && fn->neighbors[PREV(fn_ci)] != f)
+                        if (f->OppositeNeighbor(ci))
                             f->children[ci]->neighbors[ci] = fn->children[fn_ci];
                         else
                             f->children[ci]->neighbors[ci] = fn->children[PREV(fn_ci)];

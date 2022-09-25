@@ -86,6 +86,21 @@ struct Face {
         std::rotate(neighbors, neighbors + k, neighbors + 3);
     }
 
+    // Detect opposite neighbor triangles.
+    // For traversal, `f_next == f_last` or `v_next == v_last` also work.
+    bool OppositeNeighbor(int k) const
+    {
+        const Face* fn = neighbors[k];
+        // This checking using vertex IDs is more robust than the following which cannot handle
+        // 2 triangles sharing the same 3 vertexes (really rare cases).
+        //     // Works for most cases.
+        //     // Works for model tri2_overlap_same, but doesn't for model tri2_overlap_opposite.
+        //     `fn->neighbors[fn_ci] == f`
+        //     // Works for model tri2_overlap_opposite, but doesn't for model tri2_overlap_same.
+        //     `fn->neighbors[fn_ci] == f && fn->neighbors[PREV(fn_ci)] != f`
+        return fn ? fn->VertexId(v[NEXT(k)]) == NEXT(fn->VertexId(v[k])) : false;
+    }
+
     const Face* NextNeighbor(const Vertex* vertex) const
     {
         return neighbors[VertexId(vertex)];

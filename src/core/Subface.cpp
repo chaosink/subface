@@ -14,6 +14,8 @@ std::vector<const Vertex*> Vertex::OneRing() const
 {
     std::vector<const Vertex*> ring(valence);
     size_t i = 0;
+
+    /* Use `v_next == v_last` to detect opposite neighbor triangles. */
     if (boundary) {
         if (start_face->PrevNeighbor(this) == nullptr)
             ring[i++] = start_face->PrevVertex(this);
@@ -21,11 +23,33 @@ std::vector<const Vertex*> Vertex::OneRing() const
             ring[i++] = start_face->NextVertex(this);
     }
     TraverseFaces([&](const Face* f) {
+        // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `f->NextVertex(this) == ring[i - 1]`.
         if (i != 0 && f->NextVertex(this) == ring[i - 1])
             ring[i++] = f->PrevVertex(this);
         else
             ring[i++] = f->NextVertex(this);
     });
+
+    /* Use `OppositeNeighbor()` to detect opposite neighbor triangles. */
+    // bool f_opposite = false;
+    // if (boundary) {
+    //     f_opposite = start_face->PrevNeighbor(this) != nullptr;
+    //     if (f_opposite)
+    //         ring[i++] = start_face->NextVertex(this);
+    //     else
+    //         ring[i++] = start_face->PrevVertex(this);
+    // }
+    // TraverseFaces([&](const Face* f) {
+    //     int vi = f->VertexId(this);
+    //     // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `f_opposite`.
+    //     if (f_opposite)
+    //         ring[i++] = f->v[PREV(vi)];
+    //     else
+    //         ring[i++] = f->v[NEXT(vi)];
+    //     int fn_id = f_opposite ? PREV(vi) : vi;
+    //     f_opposite ^= f->OppositeNeighbor(fn_id);
+    // });
+
     return ring;
 }
 
@@ -42,6 +66,8 @@ std::vector<const Vertex*> Vertex::BoundaryNeighbors() const
 const Face* Vertex::TraverseFaces(const std::function<void(const Face*)>& func) const
 {
     const Face *f = start_face, *f_last = nullptr;
+
+    /* Use `f_next == f_last` to detect opposite neighbor triangles. */
     do {
         func(f);
 
@@ -66,6 +92,22 @@ const Face* Vertex::TraverseFaces(const std::function<void(const Face*)>& func) 
         f_last = f;
         f = fn;
     } while (f && f != start_face);
+
+    /* Use `OppositeNeighbor()` to detect opposite neighbor triangles. */
+    // bool f_opposite = f->NextNeighbor(this) == nullptr; // The facing of the first face defines "opposite" for the whole traversal.
+    // do {
+    //     func(f);
+    //
+    //     int fn_id = f->VertexId(this);
+    //     // Check the comments in the above implementation for the reason of checking `f_opposite`.
+    //     if (f_opposite)
+    //         fn_id = PREV(fn_id);
+    //     const Face* fn = f->neighbors[fn_id];
+    //     f_opposite ^= f->OppositeNeighbor(fn_id);
+    //     f_last = f;
+    //     f = fn;
+    // } while (f && f != start_face);
+
     return f_last;
 }
 
