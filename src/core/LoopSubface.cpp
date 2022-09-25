@@ -342,6 +342,17 @@ void LoopSubface::Subdivide(int level, bool flat)
         faces_base = std::move(faces_new);
     }
 
+    if (!flat && level) {
+        std::vector<glm::vec3> limit(vertexes_base.size());
+        for (size_t i = 0; i < vertexes_base.size(); ++i)
+            if (vertexes_base[i]->boundary)
+                limit[i] = WeightBoundary(vertexes_base[i], 1.f / 5.f);
+            else
+                limit[i] = WeightOneRing(vertexes_base[i], LoopGamma(vertexes_base[i]->valence));
+        for (size_t i = 0; i < vertexes_base.size(); ++i)
+            vertexes_base[i]->p = limit[i];
+    }
+
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
     spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
