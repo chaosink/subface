@@ -371,11 +371,9 @@ void LoopSubface::Tesselate3(int level)
                 faces_base[fi]->children[ci] = faces_new[fi * 3 + ci] = mp.New<Face>();
 
         // Add a new sub-vertex on each face.
-        std::vector<int> face2vertex(faces_base.size());
         for (size_t fi = 0; fi < faces_base.size(); ++fi) {
             Face* f = faces_base[fi];
 
-            face2vertex[fi] = vertexes_new.size();
             vertexes_new.emplace_back(mp.New<Vertex>());
             Vertex* v = vertexes_new.back();
             v->boundary = false;
@@ -409,7 +407,7 @@ void LoopSubface::Tesselate3(int level)
             for (int ci = 0; ci < 3; ++ci) {
                 f->children[ci]->v[ci] = f->v[ci]->child;
                 f->children[ci]->v[NEXT(ci)] = f->v[NEXT(ci)]->child;
-                f->children[ci]->v[PREV(ci)] = vertexes_new[face2vertex[fi]];
+                f->children[ci]->v[PREV(ci)] = vertexes_new[vertexes_base.size() + fi];
             }
         }
 
