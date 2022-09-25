@@ -67,9 +67,9 @@ int main(int argc, char* argv[])
         });
 
         enable_cull_face.Update([&]() {
-            glDisable(GL_CULL_FACE);
-        }, [&]() {
             glEnable(GL_CULL_FACE);
+        }, [&]() {
+            glDisable(GL_CULL_FACE);
         });
 
         enable_transparent_window.Update([&]() {

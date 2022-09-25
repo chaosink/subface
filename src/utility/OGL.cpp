@@ -58,7 +58,7 @@ void OGL::InitGL(const char* vertex_file_path, const char* fragment_file_path, c
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     LoadShader(vertex_file_path, fragment_file_path, geometry_file_path);
 
