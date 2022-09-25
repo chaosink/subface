@@ -13,11 +13,18 @@ void Vertex::ComputeValence()
 std::vector<const Vertex*> Vertex::OneRing() const
 {
     std::vector<const Vertex*> ring(valence);
-    uint32_t i = 0;
-    if (boundary)
-        ring[i++] = start_face->PrevVertex(this);
+    size_t i = 0;
+    if (boundary) {
+        if (start_face->PrevNeighbor(this) == nullptr)
+            ring[i++] = start_face->PrevVertex(this);
+        else
+            ring[i++] = start_face->NextVertex(this);
+    }
     TraverseFaces([&](const Face* f) {
-        ring[i++] = f->NextVertex(this);
+        if (i != 0 && f->NextVertex(this) == ring[i - 1])
+            ring[i++] = f->PrevVertex(this);
+        else
+            ring[i++] = f->NextVertex(this);
     });
     return ring;
 }
