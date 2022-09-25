@@ -334,7 +334,7 @@ void LoopSubface::Subdivide(int level, bool flat)
     spdlog::info("Subdivision level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
 
-void LoopSubface::Export(std::string file_name, bool smooth)
+void LoopSubface::ExportObj(std::string file_name, bool smooth)
 {
     file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level_);
     if (smooth)

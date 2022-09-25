@@ -25,4 +25,8 @@ public:
     {
         return state_;
     }
+    void state(bool s)
+    {
+        state_ = s;
+    }
 };

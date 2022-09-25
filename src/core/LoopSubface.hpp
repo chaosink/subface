@@ -44,7 +44,7 @@ public:
     {
         return unindexed_flat_normals_;
     }
-    void Export(std::string file_name, bool smooth);
+    void ExportObj(std::string file_name, bool smooth);
 };
 
 }

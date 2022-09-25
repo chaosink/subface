@@ -14,7 +14,7 @@ OGL::~OGL()
     glfwTerminate();
 }
 
-GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h)
+GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h, bool cmd_mode)
 {
     window_title_ = window_title;
     window_w_ = window_w;
@@ -29,6 +29,8 @@ GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h)
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+    if (cmd_mode)
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     window_ = glfwCreateWindow(window_w_, window_h_, window_title_.c_str(), NULL, NULL);
     if (!window_) {

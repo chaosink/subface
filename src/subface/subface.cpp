@@ -13,16 +13,22 @@ using namespace subface;
 
 int main(int argc, char* argv[])
 {
+    bool cmd_mode = false;
+    int cmd_level = 0;
     if (argc < 2) {
-        printf("Usage: subface model_file\n");
+        printf("Usage: subface model_file [level]\n");
+        printf("Cmd mode only with OBJ export and PNG save if level is specified.\n");
         return 0;
+    } else if (argc == 3) {
+        cmd_mode = true;
+        cmd_level = atoi(argv[2]);
     }
 
     int window_w = 1280;
     int window_h = 720;
 
     OGL ogl;
-    ogl.InitGLFW("Subface", window_w, window_h);
+    ogl.InitGLFW("Subface", window_w, window_h, cmd_mode);
     ogl.InitGL("shader/vertex.glsl", "shader/fragment.glsl");
 
     Model model(ogl.window(), argv[1]);
@@ -41,10 +47,15 @@ int main(int argc, char* argv[])
     Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
     Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
-    Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
+    Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
     Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
-    int level = 0, level_old = 0;
-    bool flat = false, flat_old = false;
+    int level = 0, level_old = -1;
+    bool flat = false, flat_old = true;
+
+    if (cmd_mode) {
+        level = cmd_level;
+        enable_smooth_normal.state(true);
+    }
 
     double time = ogl.time();
     Camera camera(ogl.window(), window_w, window_h, time);
@@ -79,11 +90,12 @@ int main(int argc, char* argv[])
             glClearColor(0.08f, 0.16f, 0.24f, 1.f);
         });
 
-        export_mesh.Update([&]() {
-            ls.Export(argv[1], enable_smooth_normal.state());
-        });
+        auto export_obj_func = [&]() {
+            ls.ExportObj(argv[1], enable_smooth_normal.state());
+        };
+        export_obj.Update(export_obj_func);
 
-        save_png.Update([&]() {
+        auto save_png_func = [&]() {
             string file_name = argv[1];
             file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level);
             if (enable_smooth_normal.state())
@@ -91,7 +103,8 @@ int main(int argc, char* argv[])
             else
                 file_name += "_flat.png";
             ogl.SavePng(file_name);
-        });
+        };
+        save_png.Update(save_png_func);
         // clang-format on
 
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
@@ -129,6 +142,12 @@ int main(int argc, char* argv[])
         }
 
         ogl.Update();
+
+        if (cmd_mode) {
+            export_obj_func();
+            save_png_func();
+            break;
+        }
     }
 
     return 0;
