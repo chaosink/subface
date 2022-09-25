@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -50,9 +51,9 @@ struct Edge {
 
     bool operator<(const Edge& e2) const
     {
-        if (v[0] == e2.v[0])
-            return v[1] < e2.v[1];
-        return v[0] < e2.v[0];
+        const std::array<void*, 2>& a = *reinterpret_cast<const std::array<void*, 2>*>(v);
+        const std::array<void*, 2>& b = *reinterpret_cast<const std::array<void*, 2>*>(e2.v);
+        return a < b;
     }
 };
 
