@@ -379,7 +379,7 @@ void LoopSubface::Subdivide(int level, bool flat, bool compute_limit)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
 void LoopSubface::Tessellate3(int level)
@@ -474,7 +474,7 @@ void LoopSubface::Tessellate3(int level)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
 void LoopSubface::Tessellate4(int level)
@@ -581,7 +581,7 @@ void LoopSubface::Tessellate4(int level)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
 void LoopSubface::Tessellate4_1(int level)
@@ -788,7 +788,7 @@ void LoopSubface::Tessellate4_1(int level)
 
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
 template <typename... Args>
@@ -832,15 +832,15 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     std::vector<Face> faces;
     BuildTopology(result_positions, result_indexes, vertexes, faces);
 
-    std::vector<Vertex*> vertexes_ptr(vertexes.size());
-    std::vector<Face*> faces_ptr(faces.size());
+    std::vector<Vertex*> vertexes_base(vertexes.size());
+    std::vector<Face*> faces_base(faces.size());
     for (size_t i = 0; i < vertexes.size(); i++)
-        vertexes_ptr[i] = &vertexes[i];
+        vertexes_base[i] = &vertexes[i];
     for (size_t i = 0; i < faces.size(); i++)
-        faces_ptr[i] = &faces[i];
-    ComputeNormalsAndPositions(vertexes_ptr, faces_ptr);
+        faces_base[i] = &faces[i];
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
 
-    spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
 void LoopSubface::ExportObj(std::string file_name, bool smooth) const
