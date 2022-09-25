@@ -172,18 +172,18 @@ int main(int argc, char* argv[])
                 ogl.Normal(ls.normal_flat());
         }
 
-        if (render_mode == 0) {
+        if (render_mode == RenderMode_FacesWireframe) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
             ogl.Uniform("wireframe", 1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
-        } else if (render_mode == 1) {
+        } else if (render_mode == RenderMode_Faces) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
-        } else if (render_mode == 2) {
+        } else if (render_mode == RenderMode_Wireframe) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
