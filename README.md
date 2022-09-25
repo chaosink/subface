@@ -37,12 +37,12 @@ key | function
 key | function
 -|-
 `Ctrl` + `1`-`8` | choose processing methods from<br/>1.SubdivideSmooth<br/>2.SubdivideSmoothNoLimit<br/>3.SubdivideFlat (same as 4.Tessellate4)<br/>4.Tessellate4<br/>5.Tessellate4_1 (another 1-to-4 triangle tessellation pattern than 4.Tessellate4)<br/>6.Tessellate3<br/>7.Decimate<br/>8.DecimateSloppy 
-`0`-`9` | subdivision level, `0` for the original mesh (default)
-`Tab` | switch rendering mode: face, wireframe, face + wireframe (default)
+`0`-`9` | processing level, `0` for the original mesh (default)
+`Tab` | switch rendering mode: faces + wireframe (default), faces, wireframe
 `N` | enable / disable (default) smooth rendering
 `C` | enable (default) / disable face culling
 `T` | enable (default) / disable transparent window
-`O` | export the subdivided mesh as OBJ file
+`O` | export the processed mesh as OBJ file
 
 # Results
 
