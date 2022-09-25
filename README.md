@@ -46,54 +46,131 @@ key | function
 
 # Results
 
-* original mesh, faces
+* rendering modes
 
-![suzanne_level-0_face.png](./result/suzanne_level-0_face.png)
+<table>
+	<!-- faces + wireframe, faces -->
+	<tr align="center">
+		<th>
+			faces + wireframe
+		</th>
+		<th>
+			faces
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-0_flat.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-0_face.png"></img>
+		</td>
+	</tr>
+	<!-- wireframe with face culling, wireframe without face culling -->
+	<tr align="center">
+		<th>
+			wireframe with face culling
+		</th>
+		<th>
+			wireframe without face culling
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-0_wireframe_cull-face.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-0_wireframe_no-cull-face.png"></img>
+		</td>
+	</tr>
+</table>
 
-* original mesh, wireframe with face culling
+* 1.SubdivideSmooth, flat vs smooth
 
-![suzanne_level-0_wireframe_cull-face.png](./result/suzanne_level-0_wireframe_cull-face.png)
-
-* original mesh, wireframe without face culling
-
-![suzanne_level-0_wireframe_no-cull-face.png](./result/suzanne_level-0_wireframe_no-cull-face.png)
-
-* original mesh, flat
-
-![suzanne_level-0_flat.png](./result/suzanne_level-0_flat.png)
-
-* original mesh, smooth
-
-![suzanne_level-0_smooth.png](./result/suzanne_level-0_smooth.png)
-
-* level 1, flat
-
-![suzanne_level-1_flat.png](./result/suzanne_level-1_flat.png)
-
-* level 1, smooth
-
-![suzanne_level-1_smooth.png](./result/suzanne_level-1_smooth.png)
-
-* level 2, flat
-
-![suzanne_level-2_flat.png](./result/suzanne_level-2_flat.png)
-
-* level 2, smooth
-
-![suzanne_level-2_smooth.png](./result/suzanne_level-2_smooth.png)
-
-* level 3, flat
-
-![suzanne_level-3_flat.png](./result/suzanne_level-3_flat.png)
-
-* level 3, smooth
-
-![suzanne_level-3_smooth.png](./result/suzanne_level-3_smooth.png)
-
-* level 4, flat
-
-![suzanne_level-4_flat.png](./result/suzanne_level-4_flat.png)
-
-* level 4, smooth
-
-![suzanne_level-4_smooth.png](./result/suzanne_level-4_smooth.png)
+<table>
+	<!-- original mesh -->
+	<tr align="center">
+		<th>
+			original mesh, flat
+		</th>
+		<th>
+			original mesh, smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-0_flat.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-0_smooth.png"></img>
+		</td>
+	</tr>
+	<!-- level 1 -->
+	<tr align="center">
+		<th>
+			level 1, flat
+		</th>
+		<th>
+			level 1, smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-1_flat.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-1_smooth.png"></img>
+		</td>
+	</tr>
+	<!-- level 2 -->
+	<tr align="center">
+		<th>
+			level 2, flat
+		</th>
+		<th>
+			level 2, smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-2_flat.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-2_smooth.png"></img>
+		</td>
+	</tr>
+	<!-- level 3 -->
+	<tr align="center">
+		<th>
+			level 3, flat
+		</th>
+		<th>
+			level 3, smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-3_flat.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-3_smooth.png"></img>
+		</td>
+	</tr>
+	<!-- level 4 -->
+	<tr align="center">
+		<th>
+			level 4, flat
+		</th>
+		<th>
+			level 4, smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="./result/suzanne_level-4_flat.png"></img>
+		</td>
+		<td>
+			<img src="./result/suzanne_level-4_smooth.png"></img>
+		</td>
+	</tr>
+</table>
