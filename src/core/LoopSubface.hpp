@@ -34,6 +34,7 @@ public:
     void Subdivide(int level, bool flat);
     void Tesselate3(int level);
     void Tesselate4(int level);
+    void Tesselate4_1(int level);
     std::vector<glm::vec3>& vertex()
     {
         return unindexed_vertexes_;
