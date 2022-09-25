@@ -8,7 +8,7 @@
 
 namespace subface {
 
-const float PI = 3.14159265358979323846f;
+constexpr float PI = 3.14159265358979323846f;
 
 #define NEXT(i) (((i) + 1) % 3)
 #define PREV(i) (((i) + 2) % 3)
@@ -34,14 +34,14 @@ struct Vertex {
 struct Edge {
     const Vertex* v[2];
     Face* f;
-    int edge_num;
+    int id;
 
     Edge(const Vertex* v0 = nullptr, const Vertex* v1 = nullptr)
     {
         v[0] = std::min(v0, v1);
         v[1] = std::max(v0, v1);
         f = nullptr;
-        edge_num = -1;
+        id = -1;
     }
 
     bool operator<(const Edge& e2) const
@@ -67,7 +67,7 @@ struct Face {
             children[i] = nullptr;
     }
 
-    int VNum(const Vertex* vertex) const
+    int VertexId(const Vertex* vertex) const
     {
         for (int i = 0; i < 3; ++i)
             if (v[i] == vertex)
@@ -77,19 +77,19 @@ struct Face {
 
     const Face* NextNeighbor(const Vertex* vertex) const
     {
-        return neighbors[VNum(vertex)];
+        return neighbors[VertexId(vertex)];
     }
     const Face* PrevNeighbor(const Vertex* vertex) const
     {
-        return neighbors[PREV(VNum(vertex))];
+        return neighbors[PREV(VertexId(vertex))];
     }
     const Vertex* NextVertex(const Vertex* vertex) const
     {
-        return v[NEXT(VNum(vertex))];
+        return v[NEXT(VertexId(vertex))];
     }
     const Vertex* PrevVertex(const Vertex* vertex) const
     {
-        return v[PREV(VNum(vertex))];
+        return v[PREV(VertexId(vertex))];
     }
     const Vertex* OtherVertex(const Vertex* v0, const Vertex* v1) const
     {

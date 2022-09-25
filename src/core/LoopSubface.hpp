@@ -12,16 +12,17 @@ class LoopSubface {
     std::vector<Vertex> vertexes_;
     std::vector<Face> faces_;
 
-    std::vector<glm::vec3> vertex_;
-    std::vector<glm::vec3> normal_smooth_;
-    std::vector<glm::vec3> normal_flat_;
+    std::vector<glm::vec3> unindexed_vertexes_;
+    std::vector<glm::vec3> unindexed_smooth_normals_;
+    std::vector<glm::vec3> unindexed_flat_normals_;
 
-    std::vector<glm::vec3> indexed_vertex_;
-    std::vector<glm::vec3> indexed_normal_smooth_;
-    std::vector<glm::vec3> indexed_normal_flat_;
-    std::vector<int> index_vertex_;
-    std::vector<int> index_normal_smooth_;
-    std::vector<int> index_normal_flat_;
+    std::vector<glm::vec3> indexed_vertexes_;
+    std::vector<glm::vec3> indexed_smooth_normals_;
+    std::vector<glm::vec3> indexed_flat_normals_;
+
+    std::vector<int> vertex_indexes_;
+    std::vector<int> smooth_normal_indexes_;
+    std::vector<int> flat_normal_indexes_;
 
     static float Beta(int valence);
     static float LoopGamma(int valence);
@@ -33,15 +34,15 @@ public:
     void Subdivide(int level, bool flat);
     std::vector<glm::vec3>& vertex()
     {
-        return vertex_;
+        return unindexed_vertexes_;
     }
     std::vector<glm::vec3>& normal_smooth()
     {
-        return normal_smooth_;
+        return unindexed_smooth_normals_;
     }
     std::vector<glm::vec3>& normal_flat()
     {
-        return normal_flat_;
+        return unindexed_flat_normals_;
     }
     void Export(std::string file_name, bool smooth);
 };

@@ -23,19 +23,19 @@ int Vertex::Valence()
 
 void Vertex::OneRing(std::vector<glm::vec3>& ring)
 {
-    const Face* face = start_face;
+    const Face* f = start_face;
     uint32_t i = 0;
 
     if (boundary) {
-        const Face* f;
-        while ((f = face->PrevNeighbor(this)) != nullptr)
-            face = f;
-        ring[i++] = face->PrevVertex(this)->p;
+        const Face* first_face;
+        while ((first_face = f->PrevNeighbor(this)) != nullptr)
+            f = first_face;
+        ring[i++] = f->PrevVertex(this)->p;
     }
 
     for (; i < ring.size(); ++i) {
-        ring[i] = face->NextVertex(this)->p;
-        face = face->NextNeighbor(this);
+        ring[i] = f->NextVertex(this)->p;
+        f = f->NextNeighbor(this);
     }
 }
 
