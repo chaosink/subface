@@ -79,6 +79,13 @@ struct Face {
         return -1;
     }
 
+    void Shift(int k)
+    {
+        k %= 3;
+        std::rotate(v, v + k, v + 3);
+        std::rotate(neighbors, neighbors + k, neighbors + 3);
+    }
+
     const Face* NextNeighbor(const Vertex* vertex) const
     {
         return neighbors[VertexId(vertex)];

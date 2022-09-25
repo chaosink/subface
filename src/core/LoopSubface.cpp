@@ -586,6 +586,39 @@ void LoopSubface::Tessellate4_1(int level)
         std::vector<Vertex*> vertexes_new;
         std::vector<Face*> faces_new(faces_base.size() * 4);
 
+        // Shift vertexes and neighbors so that the new divergency vertex (e.g. new vertex 2 on edge 0-2 in the following diagram) is on the longest edges.
+        //     1
+        //    /|\
+        //   01|21
+        //  /0\|/3\
+        // 0 - 2 - 2
+        // The following tessellation code is based on the above tessellation pattern.
+        // So given `longest_edge_id`, vertexes and neighbors need to shift by `longest_edge_id + 3 - 2`, or `longest_edge_id + 1`.
+        //     1                            1
+        //    /|\   longest_edge_id == 2   /|\
+        //   01|21  ------------------->  01|21
+        //  /0\|/3\       Shift(3)       /0\|/3\
+        // 0 - 2 - 2     (no change)    0 - 2 - 2
+        //
+        //     1                            0
+        //    /|\   longest_edge_id == 1   /|\
+        //   01|21  ------------------->  21|20
+        //  /0\|/3\       Shift(2)       /0\|/3\
+        // 0 - 2 - 2                    2 - 1 - 1
+        //
+        //     1                            2
+        //    /|\   longest_edge_id == 0   /|\
+        //   01|21  ------------------->  11|22
+        //  /0\|/3\       Shift(1)       /0\|/3\
+        // 0 - 2 - 2                    1 - 0 - 0
+        for (auto& f : faces_base) {
+            float edge_lengths[3] {};
+            for (int i = 0; i < 3; ++i)
+                edge_lengths[i] = glm::distance(f->v[i]->p, f->v[NEXT(i)]->p);
+            int longest_edge_id = static_cast<int>(std::max_element(edge_lengths, edge_lengths + 3) - edge_lengths);
+            f->Shift(longest_edge_id + 1);
+        }
+
         for (auto& v : vertexes_base) {
             vertexes_new.emplace_back(mp.New<Vertex>());
             v->child = vertexes_new.back();
