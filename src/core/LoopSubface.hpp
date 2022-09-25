@@ -30,7 +30,7 @@ class LoopSubface {
 
 public:
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<int>& indexes);
-    void Subdivide(int level);
+    void Subdivide(int level, bool flat);
     std::vector<glm::vec3>& vertex()
     {
         return vertex_;

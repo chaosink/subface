@@ -99,7 +99,7 @@ glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
     return p;
 }
 
-void LoopSubface::Subdivide(int level)
+void LoopSubface::Subdivide(int level, bool flat)
 {
     Timer timer("LoopSubface::Subdivide()");
 
@@ -128,13 +128,17 @@ void LoopSubface::Subdivide(int level)
                 f[j]->children[k] = new_faces[j * 4 + k] = mp.New<Face>();
 
         for (auto& vertex : v)
-            if (!vertex->boundary) {
-                if (vertex->regular)
-                    vertex->child->p = WeightOneRing(vertex, 1.f / 16.f);
-                else
-                    vertex->child->p = WeightOneRing(vertex, Beta(vertex->Valence()));
+            if (flat) {
+                vertex->child->p = vertex->p;
             } else {
-                vertex->child->p = WeightBoundary(vertex, 1.f / 8.f);
+                if (!vertex->boundary) {
+                    if (vertex->regular)
+                        vertex->child->p = WeightOneRing(vertex, 1.f / 16.f);
+                    else
+                        vertex->child->p = WeightOneRing(vertex, Beta(vertex->Valence()));
+                } else {
+                    vertex->child->p = WeightBoundary(vertex, 1.f / 8.f);
+                }
             }
 
         std::map<Edge, Vertex*> edge_vertex;
@@ -149,7 +153,7 @@ void LoopSubface::Subdivide(int level)
                     vertex->boundary = (face->neighbors[k] == nullptr);
                     vertex->start_face = face->children[3];
 
-                    if (vertex->boundary) {
+                    if (flat || vertex->boundary) {
                         vertex->p = 0.5f * edge.v[0]->p;
                         vertex->p += 0.5f * edge.v[1]->p;
                     } else {
@@ -197,7 +201,7 @@ void LoopSubface::Subdivide(int level)
         f = std::move(new_faces);
     }
 
-    if (level) {
+    if (!flat && level) {
         std::vector<glm::vec3> limit(v.size());
         for (size_t i = 0; i < v.size(); ++i) {
             if (v[i]->boundary)

@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 
     LoopSubface ls;
     ls.BuildTopology(model.indexed_vertex(), model.index());
-    ls.Subdivide(0);
+    ls.Subdivide(0, false);
 
     // ogl.Vertex(model.vertex());
     // ogl.Normal(model.normal());
@@ -43,6 +43,7 @@ int main(int argc, char* argv[])
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, true);
     Toggle export_mesh(ogl.window(), GLFW_KEY_O, false);
     int level = 0, level_old = 0;
+    bool flat = false, flat_old = false;
 
     double time = ogl.time();
     Camera camera(ogl.window(), window_w, window_h, time);
@@ -83,11 +84,15 @@ int main(int argc, char* argv[])
         // clang-format on
 
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
-            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
+            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS) {
                 level = key - GLFW_KEY_0;
-        if (level != level_old) {
+                flat = glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS;
+            }
+
+        if (level != level_old || flat != flat_old) {
             level_old = level;
-            ls.Subdivide(level);
+            flat_old = flat;
+            ls.Subdivide(level, flat);
             ogl.Vertex(ls.vertex());
             if (enable_smooth_normal.state())
                 ogl.Normal(ls.normal_smooth());
