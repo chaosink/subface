@@ -419,7 +419,15 @@ void LoopSubface::Tessellate3(int level)
                 f->children[ci]->neighbors[NEXT(ci)] = f->children[NEXT(ci)];
 
                 const Face* fn = f->neighbors[ci];
-                f->children[ci]->neighbors[ci] = fn ? fn->children[fn->VertexId(f->v[NEXT(ci)])] : nullptr;
+                if (fn) {
+                    int fn_ci = fn->VertexId(f->v[ci]);
+                    // Opposite normals.
+                    if (fn->neighbors[fn_ci] == f)
+                        f->children[ci]->neighbors[ci] = fn->children[fn_ci];
+                    else
+                        f->children[ci]->neighbors[ci] = fn->children[PREV(fn_ci)];
+                }
+                // `f->children[ci]->neighbors[ci]` is default as `nullptr`. No need to assign in `else`.
             }
         }
 
