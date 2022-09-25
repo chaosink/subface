@@ -7,7 +7,7 @@
 namespace subface {
 
 class LoopSubface {
-    int level_;
+    int level_ = 0;
 
     std::vector<Vertex> vertexes_;
     std::vector<Face> faces_;

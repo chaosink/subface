@@ -748,6 +748,9 @@ void LoopSubface::Tesselate4_1(int level)
                     return 1;
                 case 2:
                     return 3;
+                default:
+                    assert(false);
+                    return 0;
                 }
             };
             auto vertex_id_to_child_id_nxt = [](int i) {
@@ -758,6 +761,9 @@ void LoopSubface::Tesselate4_1(int level)
                     return 2;
                 case 2:
                     return 3;
+                default:
+                    assert(false);
+                    return 0;
                 }
             };
 

@@ -10,16 +10,16 @@
 #include "FPS.hpp"
 
 class OGL {
-    int window_w_, window_h_;
-    GLFWwindow* window_;
+    int window_w_ = -1, window_h_ = -1;
+    GLFWwindow* window_ = nullptr;
     std::string window_title_;
 
     FPS fps_;
 
-    GLuint shader_;
-    GLuint mvp_, mv_;
-    GLuint vertex_array_, vertex_buffer_, normal_buffer_;
-    size_t n_vertex_;
+    GLuint shader_ = -1;
+    GLuint mvp_ = -1, mv_ = -1;
+    GLuint vertex_array_ = -1, vertex_buffer_ = -1, normal_buffer_ = -1;
+    size_t n_vertex_ = -1;
 
     GLuint LoadShaderFromString(const char* vertex_string, const char* fragment_string, const char* geometry_string = nullptr);
     void LoadShader(const char* vertex_file_path, const char* fragment_file_path, const char* geometry_file_path = nullptr);
