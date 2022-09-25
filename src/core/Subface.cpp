@@ -33,7 +33,7 @@ std::vector<glm::vec3> Vertex::BoundaryNeighbors()
     do {
         end_face = f;
         f = f->NextNeighbor(this);
-    } while(f);
+    } while (f);
     return {
         start_face->PrevVertex(this)->p,
         end_face->NextVertex(this)->p

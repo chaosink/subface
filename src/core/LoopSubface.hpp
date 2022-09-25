@@ -32,6 +32,7 @@ class LoopSubface {
 public:
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
     void Subdivide(int level, bool flat);
+    void Tesselate3(int level);
     std::vector<glm::vec3>& vertex()
     {
         return unindexed_vertexes_;
