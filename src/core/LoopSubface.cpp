@@ -625,7 +625,13 @@ void LoopSubface::Tessellate4_1(int level)
             // `regular` is useless for tessellation.
             v->child->p = v->p;
             v->child->boundary = v->boundary;
-            v->child->valence = v->valence;
+            int vi_1_count = 0;
+            v->TraverseFaces([&](const Face* f) {
+                // Only vertex 1 gets 1 more valence.
+                if (f->VertexId(v) == 1)
+                    vi_1_count++;
+            });
+            v->child->valence = v->valence + vi_1_count;
         }
         // Create new faces here for the convinience of updating new vertexes' `start_face` ptr.
         // After updating new vertexes, new faces are updated.
@@ -735,8 +741,6 @@ void LoopSubface::Tessellate4_1(int level)
             }
             // Update new sub-faces' vertexes.
             {
-                f->v[1]->child->valence += 1;
-
                 Edge e[3];
                 for (int i = 0; i < 3; ++i)
                     e[i] = { f->v[i], f->v[(i + 1) % 3] };
