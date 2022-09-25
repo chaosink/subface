@@ -10,25 +10,25 @@ void Vertex::ComputeValence()
     });
 }
 
-std::vector<glm::vec3> Vertex::OneRing() const
+std::vector<const Vertex*> Vertex::OneRing() const
 {
-    std::vector<glm::vec3> ring(valence);
+    std::vector<const Vertex*> ring(valence);
     uint32_t i = 0;
     if (boundary)
-        ring[i++] = start_face->PrevVertex(this)->p;
+        ring[i++] = start_face->PrevVertex(this);
     TraverseFaces([&](const Face* f) {
-        ring[i++] = f->NextVertex(this)->p;
+        ring[i++] = f->NextVertex(this);
     });
     return ring;
 }
 
-std::vector<glm::vec3> Vertex::BoundaryNeighbors() const
+std::vector<const Vertex*> Vertex::BoundaryNeighbors() const
 {
     assert(boundary == true);
     const Face* end_face = TraverseFaces([](const Face*) {});
     return {
-        start_face->PrevNeighbor(this) == nullptr ? start_face->PrevVertex(this)->p : start_face->NextVertex(this)->p,
-        end_face->NextNeighbor(this) == nullptr ? end_face->NextVertex(this)->p : end_face->PrevVertex(this)->p,
+        start_face->PrevNeighbor(this) == nullptr ? start_face->PrevVertex(this) : start_face->NextVertex(this),
+        end_face->NextNeighbor(this) == nullptr ? end_face->NextVertex(this) : end_face->PrevVertex(this),
     };
 }
 

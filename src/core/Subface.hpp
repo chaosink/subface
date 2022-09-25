@@ -30,8 +30,8 @@ struct Vertex {
     }
 
     void ComputeValence();
-    std::vector<glm::vec3> OneRing() const;
-    std::vector<glm::vec3> BoundaryNeighbors() const;
+    std::vector<const Vertex*> OneRing() const;
+    std::vector<const Vertex*> BoundaryNeighbors() const;
     const Face* TraverseFaces(const std::function<void(const Face*)>& func) const;
 };
 

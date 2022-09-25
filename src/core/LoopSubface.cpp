@@ -116,17 +116,17 @@ float LoopSubface::LoopGamma(int valence)
 glm::vec3 LoopSubface::WeightOneRing(Vertex* v, float beta)
 {
     int valence = v->valence;
-    std::vector<glm::vec3> ring = v->OneRing();
+    std::vector<const Vertex*> ring = v->OneRing();
     glm::vec3 p = (1 - valence * beta) * v->p;
     for (int i = 0; i < valence; ++i)
-        p += beta * ring[i];
+        p += beta * ring[i]->p;
     return p;
 }
 
 glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
 {
-    std::vector<glm::vec3> boundary_neighbors = v->BoundaryNeighbors();
-    glm::vec3 p = (1 - beta * 2.f) * v->p + (boundary_neighbors[0] + boundary_neighbors[1]) * beta;
+    std::vector<const Vertex*> boundary_neighbors = v->BoundaryNeighbors();
+    glm::vec3 p = (1 - beta * 2.f) * v->p + (boundary_neighbors[0]->p + boundary_neighbors[1]->p) * beta;
     return p;
 }
 
@@ -139,26 +139,26 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
 
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
         size_t valence = v->valence;
-        std::vector<glm::vec3> ring = v->OneRing();
+        std::vector<const Vertex*> ring = v->OneRing();
         if (!v->boundary) {
             for (int i = 0; i < valence; ++i) {
-                T += std::cos(2.f * PI * i / valence) * ring[i];
-                S += std::sin(2.f * PI * i / valence) * ring[i];
+                T += std::cos(2.f * PI * i / valence) * ring[i]->p;
+                S += std::sin(2.f * PI * i / valence) * ring[i]->p;
             }
         } else {
-            S = ring[valence - 1] - ring[0];
+            S = ring[valence - 1]->p - ring[0]->p;
             if (valence == 2)
-                T = -v->p * 2.f + ring[0] + ring[1];
+                T = -v->p * 2.f + ring[0]->p + ring[1]->p;
             else if (valence == 3)
-                T = -v->p + ring[1];
+                T = -v->p + ring[1]->p;
             else if (valence == 4)
-                T = -v->p * 2.f - ring[0] + ring[1] * 2.f + ring[2] * 2.f - ring[3];
+                T = -v->p * 2.f - ring[0]->p + ring[1]->p * 2.f + ring[2]->p * 2.f - ring[3]->p;
             else {
                 float theta = PI / float(valence - 1);
-                T = std::sin(theta) * (ring[0] + ring[valence - 1]);
+                T = std::sin(theta) * (ring[0]->p + ring[valence - 1]->p);
                 for (int i = 1; i < valence - 1; ++i) {
                     float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
-                    T += ring[i] * weight;
+                    T += ring[i]->p * weight;
                 }
                 T = -T;
             }
