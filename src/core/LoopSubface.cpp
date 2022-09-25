@@ -145,7 +145,7 @@ void LoopSubface::Subdivide(int level, bool flat)
             } else {
                 if (!v->boundary) {
                     //   \ /   //
-                    // ���� �� ���� //
+                    // -- . -- //
                     //   / \   //
                     // (1-6*1/16) for the center vertex, (1/16) for each of the 6 neighbor vertexes.
                     if (v->regular)
@@ -156,7 +156,7 @@ void LoopSubface::Subdivide(int level, bool flat)
                 } else {
                     //      0 ... 0      //
                     //       \.../       //
-                    // 1/8 ���� 3/4 ���� 1/8 //
+                    // 1/8 -- 3/4 -- 1/8 //
                     // Only the boundary vertexes are used.
                     v->child->p = WeightBoundary(v, 1.f / 8.f);
                 }
@@ -181,15 +181,15 @@ void LoopSubface::Subdivide(int level, bool flat)
                         vertex->p = 0.5f * edge.v[0]->p;
                         vertex->p += 0.5f * edge.v[1]->p;
                     } else {
-                        //     ��   //
+                        //     .   //
                         //    / \  //
-                        //   �����𡪡� //
+                        //   .-o-. //
                         //    \ /  //
-                        //     ��   //
+                        //     .   //
                         //
                         //    1/8    //
                         //    / \    //
-                        // 3/8����3/8 //
+                        // 3/8 - 3/8 //
                         //    \ /    //
                         //    1/8    //
                         vertex->p = 3.f / 8.f * edge.v[0]->p;
@@ -215,9 +215,9 @@ void LoopSubface::Subdivide(int level, bool flat)
             for (int ci = 0; ci < 3; ++ci) {
                 //     1
                 //    /1\
-                //   0 �� 1
+                //   0 - 1
                 //  /0\3/2\
-                // 0 �� 2 �� 2
+                // 0 - 2 - 2
                 // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
                 f->children[3]->neighbors[ci] = f->children[NEXT(ci)];
                 f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
