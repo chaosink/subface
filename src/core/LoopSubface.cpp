@@ -133,13 +133,13 @@ glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
 void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes, const std::vector<Face*>& faces)
 {
     // Compute vertexes' smooth normals.
-    std::vector<glm::vec3> smooth_normals;
-    smooth_normals.reserve(vertexes.size());
-    std::vector<glm::vec3> ring;
-    for (const Vertex* v : vertexes) {
+    std::vector<glm::vec3> smooth_normals(vertexes.size());
+    for (int vi = 0; vi < vertexes.size(); ++vi) {
+        const Vertex* v = vertexes[vi];
+
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
         size_t valence = v->valence;
-        ring = v->OneRing();
+        std::vector<glm::vec3> ring = v->OneRing();
         if (!v->boundary) {
             for (int i = 0; i < valence; ++i) {
                 T += std::cos(2.f * PI * i / valence) * ring[i];
@@ -163,7 +163,7 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
                 T = -T;
             }
         }
-        smooth_normals.push_back(glm::normalize(glm::cross(S, T)));
+        smooth_normals[vi] = glm::normalize(glm::cross(S, T));
     }
 
     // Vertex indexes.
@@ -689,24 +689,24 @@ void LoopSubface::Tessellate4_1(int level)
         for (auto& f : faces_base) {
             f->v[1]->child->valence += 1;
 
-            Edge e0 { f->v[0], f->v[1] };
-            Edge e1 { f->v[1], f->v[2] };
-            Edge e2 { f->v[2], f->v[0] };
+            Edge e[3];
+            for (int i = 0; i < 3; ++i)
+                e[i] = { f->v[i], f->v[(i + 1) % 3] };
 
             f->children[0]->v[0] = f->v[0]->child;
-            f->children[0]->v[1] = edge2vertex[e0];
-            f->children[0]->v[2] = edge2vertex[e2];
+            f->children[0]->v[1] = edge2vertex[e[0]];
+            f->children[0]->v[2] = edge2vertex[e[2]];
 
-            f->children[1]->v[0] = edge2vertex[e0];
+            f->children[1]->v[0] = edge2vertex[e[0]];
             f->children[1]->v[1] = f->v[1]->child;
-            f->children[1]->v[2] = edge2vertex[e2];
+            f->children[1]->v[2] = edge2vertex[e[2]];
 
-            f->children[2]->v[0] = edge2vertex[e2];
+            f->children[2]->v[0] = edge2vertex[e[2]];
             f->children[2]->v[1] = f->v[1]->child;
-            f->children[2]->v[2] = edge2vertex[e1];
+            f->children[2]->v[2] = edge2vertex[e[1]];
 
-            f->children[3]->v[0] = edge2vertex[e2];
-            f->children[3]->v[1] = edge2vertex[e1];
+            f->children[3]->v[0] = edge2vertex[e[2]];
+            f->children[3]->v[1] = edge2vertex[e[1]];
             f->children[3]->v[2] = f->v[2]->child;
         }
 
