@@ -63,12 +63,12 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
 
         v->ComputeValence();
         //   \ /   //
-        // -- . -- //
+        // -- * -- //
         //   / \   //
         if (!v->boundary && v->valence == 6)
             v->regular = true;
         //   \ /   //
-        // -- . -- //
+        // -- * -- //
         else if (v->boundary && v->valence == 4)
             v->regular = true;
         else
@@ -232,7 +232,7 @@ void LoopSubface::Subdivide(int level, bool flat)
             } else {
                 if (!v->boundary) {
                     //   \ /   //
-                    // -- . -- //
+                    // -- * -- //
                     //   / \   //
                     // (1-6*1/16) for the center vertex, (1/16) for each of the 6 neighbor vertexes.
                     if (v->regular)
@@ -269,11 +269,11 @@ void LoopSubface::Subdivide(int level, bool flat)
                         v->p = 0.5f * e.v[0]->p;
                         v->p += 0.5f * e.v[1]->p;
                     } else {
-                        //     .   //
+                        //     *   //
                         //    / \  //
-                        //   .-o-. //
+                        //   *-O-* //
                         //    \ /  //
-                        //     .   //
+                        //     *   //
                         //
                         //    1/8    //
                         //    / \    //
