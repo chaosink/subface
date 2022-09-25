@@ -29,6 +29,7 @@ struct Vertex {
 
     int Valence();
     void OneRing(std::vector<glm::vec3>& ring);
+    std::vector<glm::vec3> BoundaryNeighbors();
 };
 
 struct Edge {

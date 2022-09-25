@@ -100,12 +100,8 @@ glm::vec3 LoopSubface::WeightOneRing(Vertex* v, float beta)
 
 glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
 {
-    int valence = v->Valence();
-    std::vector<glm::vec3> ring(valence);
-    v->OneRing(ring);
-    glm::vec3 p = (1.f - beta * 2.f) * v->p;
-    p += beta * ring[0];
-    p += beta * ring[valence - 1];
+    std::vector<glm::vec3> boundary_neighbors = v->BoundaryNeighbors();
+    glm::vec3 p = (1 - beta * 2.f) * v->p + (boundary_neighbors[0] + boundary_neighbors[1]) * beta;
     return p;
 }
 

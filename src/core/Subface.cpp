@@ -39,4 +39,19 @@ void Vertex::OneRing(std::vector<glm::vec3>& ring)
     }
 }
 
+std::vector<glm::vec3> Vertex::BoundaryNeighbors()
+{
+    assert(boundary == true);
+    const Face *first_face = start_face, *last_face = start_face, *f;
+    while ((f = first_face->PrevNeighbor(this)) != nullptr)
+        first_face = f;
+    while ((f = last_face->NextNeighbor(this)) != nullptr)
+        last_face = f;
+
+    return {
+        first_face->PrevVertex(this)->p,
+        last_face->NextVertex(this)->p
+    };
+}
+
 }
