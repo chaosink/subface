@@ -16,17 +16,17 @@ namespace subface {
 void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
     std::vector<Vertex>& vertexes, std::vector<Face>& faces)
 {
-    size_t n_vertexes = positions.size();
-    size_t n_faces = indexes.size() / 3;
+    size_t vertex_count = positions.size();
+    size_t face_count = indexes.size() / 3;
 
-    vertexes.resize(n_vertexes);
+    vertexes.resize(vertex_count);
     // Initialize vertexes' positions.
-    for (int i = 0; i < n_vertexes; ++i)
+    for (int i = 0; i < vertex_count; ++i)
         vertexes[i].p = positions[i];
 
-    faces.resize(n_faces);
+    faces.resize(face_count);
     // Initialize faces' vertexes and vertexes' `start_face`.
-    for (int i = 0; i < n_faces; ++i)
+    for (int i = 0; i < face_count; ++i)
         for (int j = 0; j < 3; j++) {
             faces[i].v[j] = &vertexes[indexes[i * 3 + j]];
             // `start_face` of the same vertex may be updated multiple times.
@@ -36,7 +36,7 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
     // Compute faces' neighbors.
     // A local variable for temp usage.
     std::set<Edge> edges;
-    for (int i = 0; i < n_faces; ++i) {
+    for (int i = 0; i < face_count; ++i) {
         Face* f = &faces[i];
         for (int vi = 0; vi < 3; ++vi) {
             int v0 = vi, v1 = NEXT(vi);
@@ -55,7 +55,7 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
     }
 
     // Update vertexes' `start_face`. Initialize vertexes' `boundary`, `valence` and `regular`.
-    for (int i = 0; i < n_vertexes; ++i) {
+    for (int i = 0; i < vertex_count; ++i) {
         Vertex* v = &vertexes[i];
 
         const Face *f = v->start_face, *f_last = nullptr;
