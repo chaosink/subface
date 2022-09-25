@@ -694,9 +694,23 @@ void LoopSubface::Tesselate4_1(int level)
     spdlog::info("{}: {} triangles, {} vertices", func_name, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
-void LoopSubface::Decimate(int level)
+template <typename... Args>
+size_t meshopt_simplify_func(bool sloppy, Args... args)
 {
-    std::string func_name = fmt::format("LoopSubface::Decimate(level={})", level);
+    if (sloppy)
+        return meshopt_simplifySloppy(args...);
+    else
+        return meshopt_simplify(args...);
+}
+
+// Reduces the number of triangles in the mesh.
+// sloppy==false
+//     Attempte to preserve mesh appearance as much as possible.
+// sloppy==true
+//     Sacrifice mesh appearance for simplification performance.
+void LoopSubface::Decimate(int level, bool sloppy)
+{
+    std::string func_name = fmt::format("LoopSubface::Decimate(level={}, sloppy={})", level, sloppy);
     Timer timer(func_name);
 
     level_ = level;
@@ -708,7 +722,8 @@ void LoopSubface::Decimate(int level)
     float target_error = 100.f;
 
     std::vector<uint32_t> result_indexes(index_count);
-    size_t result_index_count = meshopt_simplify(&result_indexes[0], &origin_indexes_[0], index_count,
+    // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
+    size_t result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
         &origin_positions_[0].x, position_count, sizeof(glm::vec3),
         target_index_count, target_error);
     result_indexes.resize(result_index_count);

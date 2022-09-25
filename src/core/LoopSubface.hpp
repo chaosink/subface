@@ -42,7 +42,7 @@ public:
     void Tesselate3(int level);
     void Tesselate4(int level);
     void Tesselate4_1(int level);
-    void Decimate(int level);
+    void Decimate(int level, bool sloppy);
 
     const std::vector<glm::vec3>& vertex() const
     {

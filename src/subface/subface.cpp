@@ -38,7 +38,11 @@ std::vector<ProcessingMethod> processing_methods = {
         } },
     { "Decimate",
         [](LoopSubface& ls, int level) {
-            ls.Decimate(level);
+            ls.Decimate(level, false);
+        } },
+    { "DecimateSloppy",
+        [](LoopSubface& ls, int level) {
+            ls.Decimate(level, true);
         } },
 };
 
