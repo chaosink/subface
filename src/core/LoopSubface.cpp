@@ -9,6 +9,8 @@
 
 #include "Timer.hpp"
 
+#include "meshoptimizer/meshoptimizer.h"
+
 namespace subface {
 
 void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
@@ -678,6 +680,44 @@ void LoopSubface::Tesselate4_1(int level)
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
     spdlog::info("Tesselate4_1 level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
+}
+
+void LoopSubface::Decimate(int level)
+{
+    Timer timer("LoopSubface::Decimate()");
+
+    level_ = level;
+
+    size_t index_count = origin_indexes_.size();
+    size_t position_count = origin_positions_.size();
+    float threshold = (1 <= level && level <= 9) ? (1.f - level * 0.1f) : 1.f;
+    size_t target_index_count = static_cast<size_t>(index_count * threshold);
+    float target_error = 100.f;
+
+    std::vector<uint32_t> result_indexes(index_count);
+    size_t result_index_count = meshopt_simplify(&result_indexes[0], &origin_indexes_[0], index_count,
+        &origin_positions_[0].x, position_count, sizeof(glm::vec3),
+        target_index_count, target_error);
+    result_indexes.resize(result_index_count);
+
+    std::vector<glm::vec3> result_positions(position_count);
+    size_t result_positions_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
+        &origin_positions_[0].x, position_count, sizeof(glm::vec3));
+    result_positions.resize(result_positions_count);
+
+    std::vector<Vertex> vertexes;
+    std::vector<Face> faces;
+    BuildTopology(result_positions, result_indexes, vertexes, faces);
+
+    std::vector<Vertex*> vertexes_ptr(vertexes.size());
+    std::vector<Face*> faces_ptr(faces.size());
+    for (size_t i = 0; i < vertexes.size(); i++)
+        vertexes_ptr[i] = &vertexes[i];
+    for (size_t i = 0; i < faces.size(); i++)
+        faces_ptr[i] = &faces[i];
+    ComputeNormalsAndPositions(vertexes_ptr, faces_ptr);
+
+    spdlog::info("Decimate level {}: {} triangles, {} vertices", level_, unindexed_positions_.size() / 3, unindexed_positions_.size());
 }
 
 void LoopSubface::ExportObj(std::string file_name, bool smooth) const

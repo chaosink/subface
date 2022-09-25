@@ -40,6 +40,8 @@ add_executable(subface
 	src/utility/OGL.cpp
 	src/utility/Timer.cpp
 	src/utility/Toggle.cpp
+	src/thirdparty/meshoptimizer/simplifier.cpp
+	src/thirdparty/meshoptimizer/vfetchoptimizer.cpp
 )
 target_link_libraries(subface
 	core

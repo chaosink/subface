@@ -116,10 +116,11 @@ int main(int argc, char* argv[])
         if (level != level_old || flat != flat_old) {
             level_old = level;
             flat_old = flat;
-            ls.Subdivide(level, flat);
+            // ls.Subdivide(level, flat);
             // ls.Tesselate3(level);
             // ls.Tesselate4(level);
             // ls.Tesselate4_1(level);
+            ls.Decimate(level);
             ogl.Vertex(ls.vertex());
             if (enable_smooth_normal.state())
                 ogl.Normal(ls.normal_smooth());
