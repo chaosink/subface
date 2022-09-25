@@ -318,9 +318,10 @@ void LoopSubface::Subdivide(int level, bool flat, bool compute_limit)
                 f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
 
                 const Face* fn = f->neighbors[ci];
-                f->children[ci]->neighbors[ci] = fn ? fn->children[fn->VertexId(f->v[ci])] : nullptr;
+                fn ? f->children[ci]->neighbors[ci] = fn->children[fn->VertexId(f->v[ci])] : 0;
                 fn = f->neighbors[PREV(ci)];
-                f->children[ci]->neighbors[PREV(ci)] = fn ? fn->children[fn->VertexId(f->v[ci])] : nullptr;
+                fn ? f->children[ci]->neighbors[PREV(ci)] = fn->children[fn->VertexId(f->v[ci])] : 0;
+                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
             }
         }
 
@@ -427,7 +428,7 @@ void LoopSubface::Tessellate3(int level)
                     else
                         f->children[ci]->neighbors[ci] = fn->children[PREV(fn_ci)];
                 }
-                // `f->children[ci]->neighbors[ci]` is default as `nullptr`. No need to assign in `else`.
+                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
             }
         }
 
@@ -527,9 +528,10 @@ void LoopSubface::Tessellate4(int level)
                 f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
 
                 const Face* fn = f->neighbors[ci];
-                f->children[ci]->neighbors[ci] = fn ? fn->children[fn->VertexId(f->v[ci])] : nullptr;
+                fn ? f->children[ci]->neighbors[ci] = fn->children[fn->VertexId(f->v[ci])] : 0;
                 fn = f->neighbors[PREV(ci)];
-                f->children[ci]->neighbors[PREV(ci)] = fn ? fn->children[fn->VertexId(f->v[ci])] : nullptr;
+                fn ? f->children[ci]->neighbors[PREV(ci)] = fn->children[fn->VertexId(f->v[ci])] : 0;
+                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
             }
         }
 
@@ -658,21 +660,23 @@ void LoopSubface::Tessellate4_1(int level)
                 }
             };
 
-            f->children[0]->neighbors[0] = f0 ? f0->children[vertex_id_to_child_id_pre(f0->VertexId(f->v[0]))] : nullptr;
+            f0 ? f->children[0]->neighbors[0] = f0->children[vertex_id_to_child_id_pre(f0->VertexId(f->v[0]))] : 0;
             f->children[0]->neighbors[1] = f->children[1];
-            f->children[0]->neighbors[2] = f2 ? f2->children[vertex_id_to_child_id_nxt(f2->VertexId(f->v[0]))] : nullptr;
+            f2 ? f->children[0]->neighbors[2] = f2->children[vertex_id_to_child_id_nxt(f2->VertexId(f->v[0]))] : 0;
 
-            f->children[1]->neighbors[0] = f0 ? f0->children[vertex_id_to_child_id_nxt(f0->VertexId(f->v[1]))] : nullptr;
+            f0 ? f->children[1]->neighbors[0] = f0->children[vertex_id_to_child_id_nxt(f0->VertexId(f->v[1]))] : 0;
             f->children[1]->neighbors[1] = f->children[2];
             f->children[1]->neighbors[2] = f->children[0];
 
             f->children[2]->neighbors[0] = f->children[1];
-            f->children[2]->neighbors[1] = f1 ? f1->children[vertex_id_to_child_id_pre(f1->VertexId(f->v[1]))] : nullptr;
+            f1 ? f->children[2]->neighbors[1] = f1->children[vertex_id_to_child_id_pre(f1->VertexId(f->v[1]))] : 0;
             f->children[2]->neighbors[2] = f->children[3];
 
             f->children[3]->neighbors[0] = f->children[2];
-            f->children[3]->neighbors[1] = f1 ? f1->children[vertex_id_to_child_id_nxt(f1->VertexId(f->v[2]))] : nullptr;
-            f->children[3]->neighbors[2] = f2 ? f2->children[vertex_id_to_child_id_pre(f2->VertexId(f->v[2]))] : nullptr;
+            f1 ? f->children[3]->neighbors[1] = f1->children[vertex_id_to_child_id_nxt(f1->VertexId(f->v[2]))] : 0;
+            f2 ? f->children[3]->neighbors[2] = f2->children[vertex_id_to_child_id_pre(f2->VertexId(f->v[2]))] : 0;
+
+            // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
         }
 
         // Update new sub-faces' vertexes.
