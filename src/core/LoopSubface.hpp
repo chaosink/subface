@@ -28,6 +28,7 @@ class LoopSubface {
     static float LoopGamma(int valence);
     static glm::vec3 WeightOneRing(Vertex* vertex, float beta);
     static glm::vec3 WeightBoundary(Vertex* v, float beta);
+    void ComputeNormals(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base);
 
 public:
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);

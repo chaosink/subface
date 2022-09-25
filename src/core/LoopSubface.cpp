@@ -106,6 +106,81 @@ glm::vec3 LoopSubface::WeightBoundary(Vertex* v, float beta)
     return p;
 }
 
+void LoopSubface::ComputeNormals(const std::vector<Vertex*>& vertexes_base, const std::vector<Face*>& faces_base)
+{
+    // Compute vertexes' smooth normals.
+    std::vector<glm::vec3> smooth_normals;
+    smooth_normals.reserve(vertexes_base.size());
+    std::vector<glm::vec3> ring;
+    for (Vertex* v : vertexes_base) {
+        glm::vec3 S(0, 0, 0), T(0, 0, 0);
+        int valence = v->valence;
+        ring = v->OneRing();
+        if (!v->boundary) {
+            for (int i = 0; i < valence; ++i) {
+                T += std::cos(2.f * PI * i / valence) * ring[i];
+                S += std::sin(2.f * PI * i / valence) * ring[i];
+            }
+        } else {
+            S = ring[valence - 1] - ring[0];
+            if (valence == 2)
+                T = -v->p * 2.f + ring[0] + ring[1];
+            else if (valence == 3)
+                T = -v->p + ring[1];
+            else if (valence == 4)
+                T = -v->p * 2.f - ring[0] + ring[1] * 2.f + ring[2] * 2.f - ring[3];
+            else {
+                float theta = PI / float(valence - 1);
+                T = std::sin(theta) * (ring[0] + ring[valence - 1]);
+                for (int i = 1; i < valence - 1; ++i) {
+                    float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
+                    T += ring[i] * weight;
+                }
+                T = -T;
+            }
+        }
+        smooth_normals.push_back(glm::normalize(glm::cross(S, T)));
+    }
+
+    // Vertex indexes.
+    std::map<const Vertex*, int> vertex2index;
+    for (size_t i = 0; i < vertexes_base.size(); ++i)
+        vertex2index[vertexes_base[i]] = static_cast<int>(i);
+
+    indexed_vertexes_.resize(vertexes_base.size());
+    for (size_t i = 0; i < vertexes_base.size(); ++i)
+        indexed_vertexes_[i] = vertexes_base[i]->p;
+
+    vertex_indexes_.resize(faces_base.size() * 3);
+    smooth_normal_indexes_.resize(faces_base.size() * 3);
+    flat_normal_indexes_.resize(faces_base.size() * 3);
+    for (size_t i = 0; i < faces_base.size(); ++i)
+        for (int j = 0; j < 3; ++j) {
+            vertex_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
+            smooth_normal_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
+        }
+    indexed_flat_normals_.resize(faces_base.size());
+
+    // Unindexd vertexes and normals.
+    unindexed_vertexes_.resize(faces_base.size() * 3);
+    unindexed_smooth_normals_.resize(faces_base.size() * 3);
+    unindexed_flat_normals_.resize(faces_base.size() * 3);
+    for (size_t i = 0; i < faces_base.size(); i++) {
+        glm::vec3 normal_flat = glm::normalize(glm::cross(
+            faces_base[i]->v[1]->p - faces_base[i]->v[0]->p,
+            faces_base[i]->v[2]->p - faces_base[i]->v[1]->p));
+        for (int j = 0; j < 3; j++) {
+            unindexed_vertexes_[i * 3 + j] = faces_base[i]->v[j]->p;
+            unindexed_smooth_normals_[i * 3 + j] = smooth_normals[vertex2index[faces_base[i]->v[j]]];
+            unindexed_flat_normals_[i * 3 + j] = normal_flat;
+            flat_normal_indexes_[i * 3 + j] = static_cast<int>(i);
+        }
+        indexed_flat_normals_[i] = normal_flat;
+    }
+
+    indexed_smooth_normals_ = std::move(smooth_normals);
+}
+
 // Same as Tesselate4(int level).
 void LoopSubface::Subdivide(int level, bool flat)
 {
@@ -249,90 +324,7 @@ void LoopSubface::Subdivide(int level, bool flat)
         faces_base = std::move(faces_new);
     }
 
-    // Compute vertexes' limit positions.
-    if (!flat && level) {
-        std::vector<glm::vec3> limit(vertexes_base.size());
-        for (size_t i = 0; i < vertexes_base.size(); ++i) {
-            if (vertexes_base[i]->boundary)
-                limit[i] = WeightBoundary(vertexes_base[i], 1.f / 5.f);
-            else
-                limit[i] = WeightOneRing(vertexes_base[i], LoopGamma(vertexes_base[i]->valence));
-        }
-        for (size_t i = 0; i < vertexes_base.size(); ++i)
-            vertexes_base[i]->p = limit[i];
-    }
-
-    // Compute vertexes' smooth normals.
-    std::vector<glm::vec3> smooth_normals;
-    smooth_normals.reserve(vertexes_base.size());
-    std::vector<glm::vec3> ring;
-    for (Vertex* v : vertexes_base) {
-        glm::vec3 S(0, 0, 0), T(0, 0, 0);
-        int valence = v->valence;
-        ring = v->OneRing();
-        if (!v->boundary) {
-            for (int i = 0; i < valence; ++i) {
-                T += std::cos(2.f * PI * i / valence) * ring[i];
-                S += std::sin(2.f * PI * i / valence) * ring[i];
-            }
-        } else {
-            S = ring[valence - 1] - ring[0];
-            if (valence == 2)
-                T = -v->p * 2.f + ring[0] + ring[1];
-            else if (valence == 3)
-                T = -v->p + ring[1];
-            else if (valence == 4)
-                T = -v->p * 2.f - ring[0] + ring[1] * 2.f + ring[2] * 2.f - ring[3];
-            else {
-                float theta = PI / float(valence - 1);
-                T = std::sin(theta) * (ring[0] + ring[valence - 1]);
-                for (int i = 1; i < valence - 1; ++i) {
-                    float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
-                    T += ring[i] * weight;
-                }
-                T = -T;
-            }
-        }
-        smooth_normals.push_back(glm::normalize(glm::cross(S, T)));
-    }
-
-    // Vertex indexes.
-    std::map<const Vertex*, int> vertex2index;
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        vertex2index[vertexes_base[i]] = static_cast<int>(i);
-
-    indexed_vertexes_.resize(vertexes_base.size());
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        indexed_vertexes_[i] = vertexes_base[i]->p;
-
-    vertex_indexes_.resize(faces_base.size() * 3);
-    smooth_normal_indexes_.resize(faces_base.size() * 3);
-    flat_normal_indexes_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); ++i)
-        for (int j = 0; j < 3; ++j) {
-            vertex_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-            smooth_normal_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-        }
-    indexed_flat_normals_.resize(faces_base.size());
-
-    // Unindexd vertexes and normals.
-    unindexed_vertexes_.resize(faces_base.size() * 3);
-    unindexed_smooth_normals_.resize(faces_base.size() * 3);
-    unindexed_flat_normals_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); i++) {
-        glm::vec3 normal_flat = glm::normalize(glm::cross(
-            faces_base[i]->v[1]->p - faces_base[i]->v[0]->p,
-            faces_base[i]->v[2]->p - faces_base[i]->v[1]->p));
-        for (int j = 0; j < 3; j++) {
-            unindexed_vertexes_[i * 3 + j] = faces_base[i]->v[j]->p;
-            unindexed_smooth_normals_[i * 3 + j] = smooth_normals[vertex2index[faces_base[i]->v[j]]];
-            unindexed_flat_normals_[i * 3 + j] = normal_flat;
-            flat_normal_indexes_[i * 3 + j] = static_cast<int>(i);
-        }
-        indexed_flat_normals_[i] = normal_flat;
-    }
-
-    indexed_smooth_normals_ = std::move(smooth_normals);
+    ComputeNormals(vertexes_base, faces_base);
 
     spdlog::info("Subdivision level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
@@ -416,77 +408,7 @@ void LoopSubface::Tesselate3(int level)
         faces_base = std::move(faces_new);
     }
 
-    // Compute vertexes' smooth normals.
-    std::vector<glm::vec3> smooth_normals;
-    smooth_normals.reserve(vertexes_base.size());
-    std::vector<glm::vec3> ring;
-    for (Vertex* v : vertexes_base) {
-        glm::vec3 S(0, 0, 0), T(0, 0, 0);
-        int valence = v->valence;
-        ring = v->OneRing();
-        if (!v->boundary) {
-            for (int i = 0; i < valence; ++i) {
-                T += std::cos(2.f * PI * i / valence) * ring[i];
-                S += std::sin(2.f * PI * i / valence) * ring[i];
-            }
-        } else {
-            S = ring[valence - 1] - ring[0];
-            if (valence == 2)
-                T = -v->p * 2.f + ring[0] + ring[1];
-            else if (valence == 3)
-                T = -v->p + ring[1];
-            else if (valence == 4)
-                T = -v->p * 2.f - ring[0] + ring[1] * 2.f + ring[2] * 2.f - ring[3];
-            else {
-                float theta = PI / float(valence - 1);
-                T = std::sin(theta) * (ring[0] + ring[valence - 1]);
-                for (int i = 1; i < valence - 1; ++i) {
-                    float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
-                    T += ring[i] * weight;
-                }
-                T = -T;
-            }
-        }
-        smooth_normals.push_back(glm::normalize(glm::cross(S, T)));
-    }
-
-    // Vertex indexes.
-    std::map<const Vertex*, int> vertex2index;
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        vertex2index[vertexes_base[i]] = static_cast<int>(i);
-
-    indexed_vertexes_.resize(vertexes_base.size());
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        indexed_vertexes_[i] = vertexes_base[i]->p;
-
-    vertex_indexes_.resize(faces_base.size() * 3);
-    smooth_normal_indexes_.resize(faces_base.size() * 3);
-    flat_normal_indexes_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); ++i)
-        for (int j = 0; j < 3; ++j) {
-            vertex_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-            smooth_normal_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-        }
-    indexed_flat_normals_.resize(faces_base.size());
-
-    // Unindexd vertexes and normals.
-    unindexed_vertexes_.resize(faces_base.size() * 3);
-    unindexed_smooth_normals_.resize(faces_base.size() * 3);
-    unindexed_flat_normals_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); i++) {
-        glm::vec3 normal_flat = glm::normalize(glm::cross(
-            faces_base[i]->v[1]->p - faces_base[i]->v[0]->p,
-            faces_base[i]->v[2]->p - faces_base[i]->v[1]->p));
-        for (int j = 0; j < 3; j++) {
-            unindexed_vertexes_[i * 3 + j] = faces_base[i]->v[j]->p;
-            unindexed_smooth_normals_[i * 3 + j] = smooth_normals[vertex2index[faces_base[i]->v[j]]];
-            unindexed_flat_normals_[i * 3 + j] = normal_flat;
-            flat_normal_indexes_[i * 3 + j] = static_cast<int>(i);
-        }
-        indexed_flat_normals_[i] = normal_flat;
-    }
-
-    indexed_smooth_normals_ = std::move(smooth_normals);
+    ComputeNormals(vertexes_base, faces_base);
 
     spdlog::info("Tesselate3 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
@@ -591,77 +513,7 @@ void LoopSubface::Tesselate4(int level)
         faces_base = std::move(faces_new);
     }
 
-    // Compute vertexes' smooth normals.
-    std::vector<glm::vec3> smooth_normals;
-    smooth_normals.reserve(vertexes_base.size());
-    std::vector<glm::vec3> ring;
-    for (Vertex* v : vertexes_base) {
-        glm::vec3 S(0, 0, 0), T(0, 0, 0);
-        int valence = v->valence;
-        ring = v->OneRing();
-        if (!v->boundary) {
-            for (int i = 0; i < valence; ++i) {
-                T += std::cos(2.f * PI * i / valence) * ring[i];
-                S += std::sin(2.f * PI * i / valence) * ring[i];
-            }
-        } else {
-            S = ring[valence - 1] - ring[0];
-            if (valence == 2)
-                T = -v->p * 2.f + ring[0] + ring[1];
-            else if (valence == 3)
-                T = -v->p + ring[1];
-            else if (valence == 4)
-                T = -v->p * 2.f - ring[0] + ring[1] * 2.f + ring[2] * 2.f - ring[3];
-            else {
-                float theta = PI / float(valence - 1);
-                T = std::sin(theta) * (ring[0] + ring[valence - 1]);
-                for (int i = 1; i < valence - 1; ++i) {
-                    float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
-                    T += ring[i] * weight;
-                }
-                T = -T;
-            }
-        }
-        smooth_normals.push_back(glm::normalize(glm::cross(S, T)));
-    }
-
-    // Vertex indexes.
-    std::map<const Vertex*, int> vertex2index;
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        vertex2index[vertexes_base[i]] = static_cast<int>(i);
-
-    indexed_vertexes_.resize(vertexes_base.size());
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        indexed_vertexes_[i] = vertexes_base[i]->p;
-
-    vertex_indexes_.resize(faces_base.size() * 3);
-    smooth_normal_indexes_.resize(faces_base.size() * 3);
-    flat_normal_indexes_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); ++i)
-        for (int j = 0; j < 3; ++j) {
-            vertex_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-            smooth_normal_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-        }
-    indexed_flat_normals_.resize(faces_base.size());
-
-    // Unindexd vertexes and normals.
-    unindexed_vertexes_.resize(faces_base.size() * 3);
-    unindexed_smooth_normals_.resize(faces_base.size() * 3);
-    unindexed_flat_normals_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); i++) {
-        glm::vec3 normal_flat = glm::normalize(glm::cross(
-            faces_base[i]->v[1]->p - faces_base[i]->v[0]->p,
-            faces_base[i]->v[2]->p - faces_base[i]->v[1]->p));
-        for (int j = 0; j < 3; j++) {
-            unindexed_vertexes_[i * 3 + j] = faces_base[i]->v[j]->p;
-            unindexed_smooth_normals_[i * 3 + j] = smooth_normals[vertex2index[faces_base[i]->v[j]]];
-            unindexed_flat_normals_[i * 3 + j] = normal_flat;
-            flat_normal_indexes_[i * 3 + j] = static_cast<int>(i);
-        }
-        indexed_flat_normals_[i] = normal_flat;
-    }
-
-    indexed_smooth_normals_ = std::move(smooth_normals);
+    ComputeNormals(vertexes_base, faces_base);
 
     spdlog::info("Tesselate4 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
@@ -814,77 +666,7 @@ void LoopSubface::Tesselate4_1(int level)
         faces_base = std::move(faces_new);
     }
 
-    // Compute vertexes' smooth normals.
-    std::vector<glm::vec3> smooth_normals;
-    smooth_normals.reserve(vertexes_base.size());
-    std::vector<glm::vec3> ring;
-    for (Vertex* v : vertexes_base) {
-        glm::vec3 S(0, 0, 0), T(0, 0, 0);
-        int valence = v->valence;
-        ring = v->OneRing();
-        if (!v->boundary) {
-            for (int i = 0; i < valence; ++i) {
-                T += std::cos(2.f * PI * i / valence) * ring[i];
-                S += std::sin(2.f * PI * i / valence) * ring[i];
-            }
-        } else {
-            S = ring[valence - 1] - ring[0];
-            if (valence == 2)
-                T = -v->p * 2.f + ring[0] + ring[1];
-            else if (valence == 3)
-                T = -v->p + ring[1];
-            else if (valence == 4)
-                T = -v->p * 2.f - ring[0] + ring[1] * 2.f + ring[2] * 2.f - ring[3];
-            else {
-                float theta = PI / float(valence - 1);
-                T = std::sin(theta) * (ring[0] + ring[valence - 1]);
-                for (int i = 1; i < valence - 1; ++i) {
-                    float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
-                    T += ring[i] * weight;
-                }
-                T = -T;
-            }
-        }
-        smooth_normals.push_back(glm::normalize(glm::cross(S, T)));
-    }
-
-    // Vertex indexes.
-    std::map<const Vertex*, int> vertex2index;
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        vertex2index[vertexes_base[i]] = static_cast<int>(i);
-
-    indexed_vertexes_.resize(vertexes_base.size());
-    for (size_t i = 0; i < vertexes_base.size(); ++i)
-        indexed_vertexes_[i] = vertexes_base[i]->p;
-
-    vertex_indexes_.resize(faces_base.size() * 3);
-    smooth_normal_indexes_.resize(faces_base.size() * 3);
-    flat_normal_indexes_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); ++i)
-        for (int j = 0; j < 3; ++j) {
-            vertex_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-            smooth_normal_indexes_[i * 3 + j] = vertex2index[faces_base[i]->v[j]];
-        }
-    indexed_flat_normals_.resize(faces_base.size());
-
-    // Unindexd vertexes and normals.
-    unindexed_vertexes_.resize(faces_base.size() * 3);
-    unindexed_smooth_normals_.resize(faces_base.size() * 3);
-    unindexed_flat_normals_.resize(faces_base.size() * 3);
-    for (size_t i = 0; i < faces_base.size(); i++) {
-        glm::vec3 normal_flat = glm::normalize(glm::cross(
-            faces_base[i]->v[1]->p - faces_base[i]->v[0]->p,
-            faces_base[i]->v[2]->p - faces_base[i]->v[1]->p));
-        for (int j = 0; j < 3; j++) {
-            unindexed_vertexes_[i * 3 + j] = faces_base[i]->v[j]->p;
-            unindexed_smooth_normals_[i * 3 + j] = smooth_normals[vertex2index[faces_base[i]->v[j]]];
-            unindexed_flat_normals_[i * 3 + j] = normal_flat;
-            flat_normal_indexes_[i * 3 + j] = static_cast<int>(i);
-        }
-        indexed_flat_normals_[i] = normal_flat;
-    }
-
-    indexed_smooth_normals_ = std::move(smooth_normals);
+    ComputeNormals(vertexes_base, faces_base);
 
     spdlog::info("Tesselate4 level {}: {} faces, {} vertices", level_, faces_base.size(), unindexed_vertexes_.size());
 }
