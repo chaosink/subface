@@ -261,13 +261,13 @@ void OGL::Draw()
 }
 
 #include <spdlog/fmt/fmt.h>
-void OGL::Update()
+void OGL::Update(const std::string& info)
 {
     glfwSwapBuffers(window_);
     glfwPollEvents();
 
     fps_.Update(time());
-    std::string title = fmt::format("{} {:6.2f} FPS", window_title_, fps_.fps());
+    std::string title = fmt::format("{} | {:.2f} FPS | {}", window_title_, fps_.fps(), info);
     glfwSetWindowTitle(window_, title.c_str());
 }
 

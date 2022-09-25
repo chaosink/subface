@@ -1,6 +1,8 @@
 #include <iostream>
 using namespace std;
 
+#include <spdlog/fmt/fmt.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "OGL.hpp"
@@ -52,9 +54,14 @@ std::vector<ProcessingMethod> processing_methods = {
 
 enum RenderMode {
     RenderMode_FacesWireframe,
-    RenderMode_Faces,
-    RenderMode_Wireframe,
+    RenderMode_FacesOnly,
+    RenderMode_WireframeOnly,
     RenderMode_Count,
+};
+std::vector<std::string> render_mode_names {
+    "FacesWireframe",
+    "FacesOnly",
+    "WireframeOnly",
 };
 
 int main(int argc, char* argv[])
@@ -179,17 +186,19 @@ int main(int argc, char* argv[])
             ogl.Uniform("wireframe", 1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
-        } else if (render_mode == RenderMode_Faces) {
+        } else if (render_mode == RenderMode_FacesOnly) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
-        } else if (render_mode == RenderMode_Wireframe) {
+        } else if (render_mode == RenderMode_WireframeOnly) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
         }
 
-        ogl.Update();
+        std::string title = fmt::format("{}(level={}) | {} | Cull {}",
+            processing_methods[method].name, level, render_mode_names[render_mode], enable_cull_face.state());
+        ogl.Update(title);
 
         if (cmd_mode) {
             export_obj_func();

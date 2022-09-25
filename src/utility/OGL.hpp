@@ -36,7 +36,7 @@ public:
     bool Alive();
     void Clear(GLenum bit);
     void Draw();
-    void Update();
+    void Update(const std::string& info);
     void SavePng(std::string file_name);
     double time()
     {
