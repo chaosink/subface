@@ -311,36 +311,37 @@ void LoopSubface::Subdivide(int level, bool flat, bool compute_limit)
             v->child->start_face = v->start_face->children[vi];
         }
 
-        // Update new sub-faces' neighbors.
+        // Update new sub-faces.
         for (auto& f : faces_base) {
             for (int ci = 0; ci < 3; ++ci) {
-                //     1
-                //    /1\
-                //   0 - 1
-                //  /0\3/2\
-                // 0 - 2 - 2
-                // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
-                f->children[3]->neighbors[ci] = f->children[NEXT(ci)];
-                f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
+                // Update new sub-faces' neighbors.
+                {
+                    //     1
+                    //    /1\
+                    //   0 - 1
+                    //  /0\3/2\
+                    // 0 - 2 - 2
+                    // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
 
-                const Face* fn = f->neighbors[ci];
-                fn ? f->children[ci]->neighbors[ci] = fn->children[fn->VertexId(f->v[ci])] : 0;
-                fn = f->neighbors[PREV(ci)];
-                fn ? f->children[ci]->neighbors[PREV(ci)] = fn->children[fn->VertexId(f->v[ci])] : 0;
-                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
-            }
-        }
+                    f->children[3]->neighbors[ci] = f->children[NEXT(ci)];
+                    f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
 
-        // Update new sub-faces' vertexes.
-        for (auto& f : faces_base) {
-            for (int ci = 0; ci < 3; ++ci) {
-                f->children[ci]->v[ci] = f->v[ci]->child;
+                    const Face* fn = f->neighbors[ci];
+                    fn ? f->children[ci]->neighbors[ci] = fn->children[fn->VertexId(f->v[ci])] : 0;
+                    fn = f->neighbors[PREV(ci)];
+                    fn ? f->children[ci]->neighbors[PREV(ci)] = fn->children[fn->VertexId(f->v[ci])] : 0;
+                    // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
+                }
+                // Update new sub-faces' vertexes.
+                {
+                    f->children[ci]->v[ci] = f->v[ci]->child;
 
-                // 3 new sub-faces share the the same new sub-vertex.
-                Vertex* vertex = edge2vertex[Edge(f->v[ci], f->v[NEXT(ci)])];
-                f->children[ci]->v[NEXT(ci)] = vertex;
-                f->children[NEXT(ci)]->v[ci] = vertex;
-                f->children[3]->v[ci] = vertex;
+                    // 3 new sub-faces share the the same new sub-vertex.
+                    Vertex* vertex = edge2vertex[Edge(f->v[ci], f->v[NEXT(ci)])];
+                    f->children[ci]->v[NEXT(ci)] = vertex;
+                    f->children[NEXT(ci)]->v[ci] = vertex;
+                    f->children[3]->v[ci] = vertex;
+                }
             }
         }
 
@@ -418,33 +419,33 @@ void LoopSubface::Tessellate3(int level)
             v->child->start_face = v->start_face->children[PREV(vi)];
         }
 
-        // Update new sub-faces' neighbors.
-        for (auto& f : faces_base) {
-            for (int ci = 0; ci < 3; ++ci) {
-                // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
-                f->children[ci]->neighbors[PREV(ci)] = f->children[PREV(ci)];
-                f->children[ci]->neighbors[NEXT(ci)] = f->children[NEXT(ci)];
-
-                const Face* fn = f->neighbors[ci];
-                if (fn) {
-                    int fn_ci = fn->VertexId(f->v[ci]);
-                    // Opposite normals.
-                    if (fn->neighbors[fn_ci] == f)
-                        f->children[ci]->neighbors[ci] = fn->children[fn_ci];
-                    else
-                        f->children[ci]->neighbors[ci] = fn->children[PREV(fn_ci)];
-                }
-                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
-            }
-        }
-
-        // Update new sub-faces' vertexes.
+        // Update new sub-faces.
         for (size_t fi = 0; fi < faces_base.size(); ++fi) {
             Face* f = faces_base[fi];
             for (int ci = 0; ci < 3; ++ci) {
-                f->children[ci]->v[ci] = f->v[ci]->child;
-                f->children[ci]->v[NEXT(ci)] = f->v[NEXT(ci)]->child;
-                f->children[ci]->v[PREV(ci)] = vertexes_new[vertexes_base.size() + fi];
+                // Update new sub-faces' neighbors.
+                {
+                    // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
+                    f->children[ci]->neighbors[PREV(ci)] = f->children[PREV(ci)];
+                    f->children[ci]->neighbors[NEXT(ci)] = f->children[NEXT(ci)];
+
+                    const Face* fn = f->neighbors[ci];
+                    if (fn) {
+                        int fn_ci = fn->VertexId(f->v[ci]);
+                        // Opposite normals.
+                        if (fn->neighbors[fn_ci] == f)
+                            f->children[ci]->neighbors[ci] = fn->children[fn_ci];
+                        else
+                            f->children[ci]->neighbors[ci] = fn->children[PREV(fn_ci)];
+                    }
+                    // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
+                }
+                // Update new sub-faces' vertexes.
+                {
+                    f->children[ci]->v[ci] = f->v[ci]->child;
+                    f->children[ci]->v[NEXT(ci)] = f->v[NEXT(ci)]->child;
+                    f->children[ci]->v[PREV(ci)] = vertexes_new[vertexes_base.size() + fi];
+                }
             }
         }
 
@@ -521,36 +522,37 @@ void LoopSubface::Tessellate4(int level)
             v->child->start_face = v->start_face->children[vi];
         }
 
-        // Update new sub-faces' neighbors.
+        // Update new sub-faces.
         for (auto& f : faces_base) {
             for (int ci = 0; ci < 3; ++ci) {
-                //     1
-                //    /1\
-                //   0 - 1
-                //  /0\3/2\
-                // 0 - 2 - 2
-                // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
-                f->children[3]->neighbors[ci] = f->children[NEXT(ci)];
-                f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
+                // Update new sub-faces' neighbors.
+                {
+                    //     1
+                    //    /1\
+                    //   0 - 1
+                    //  /0\3/2\
+                    // 0 - 2 - 2
+                    // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
 
-                const Face* fn = f->neighbors[ci];
-                fn ? f->children[ci]->neighbors[ci] = fn->children[fn->VertexId(f->v[ci])] : 0;
-                fn = f->neighbors[PREV(ci)];
-                fn ? f->children[ci]->neighbors[PREV(ci)] = fn->children[fn->VertexId(f->v[ci])] : 0;
-                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
-            }
-        }
+                    f->children[3]->neighbors[ci] = f->children[NEXT(ci)];
+                    f->children[ci]->neighbors[NEXT(ci)] = f->children[3];
 
-        // Update new sub-faces' vertexes.
-        for (auto& f : faces_base) {
-            for (int ci = 0; ci < 3; ++ci) {
-                f->children[ci]->v[ci] = f->v[ci]->child;
+                    const Face* fn = f->neighbors[ci];
+                    fn ? f->children[ci]->neighbors[ci] = fn->children[fn->VertexId(f->v[ci])] : 0;
+                    fn = f->neighbors[PREV(ci)];
+                    fn ? f->children[ci]->neighbors[PREV(ci)] = fn->children[fn->VertexId(f->v[ci])] : 0;
+                    // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
+                }
+                // Update new sub-faces' vertexes.
+                {
+                    f->children[ci]->v[ci] = f->v[ci]->child;
 
-                // 3 new sub-faces share the the same new sub-vertex.
-                Vertex* vertex = edge2vertex[Edge(f->v[ci], f->v[NEXT(ci)])];
-                f->children[ci]->v[NEXT(ci)] = vertex;
-                f->children[NEXT(ci)]->v[ci] = vertex;
-                f->children[3]->v[ci] = vertex;
+                    // 3 new sub-faces share the the same new sub-vertex.
+                    Vertex* vertex = edge2vertex[Edge(f->v[ci], f->v[NEXT(ci)])];
+                    f->children[ci]->v[NEXT(ci)] = vertex;
+                    f->children[NEXT(ci)]->v[ci] = vertex;
+                    f->children[3]->v[ci] = vertex;
+                }
             }
         }
 
@@ -626,88 +628,90 @@ void LoopSubface::Tessellate4_1(int level)
             v->child->start_face = v->start_face->children[vi == 2 ? 3 : vi];
         }
 
-        // Update new sub-faces' neighbors.
+        // Update new sub-faces.
         for (auto& f : faces_base) {
-            //     1
-            //    /|\
-            //   01|21
-            //  /0\|/3\
-            // 0 - 2 - 2
-            // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
+            // Update new sub-faces' neighbors
+            {
+                //     1
+                //    /|\
+                //   01|21
+                //  /0\|/3\
+                // 0 - 2 - 2
+                // `neighbors[i]` is the face sharing the edge of v[i] and v[NEXT(i)].
 
-            const Face* f0 = f->neighbors[0];
-            const Face* f1 = f->neighbors[1];
-            const Face* f2 = f->neighbors[2];
+                const Face* f0 = f->neighbors[0];
+                const Face* f1 = f->neighbors[1];
+                const Face* f2 = f->neighbors[2];
 
-            auto vertex_id_to_child_id_pre = [](int i) {
-                switch (i) {
-                case 0:
-                    return 0;
-                case 1:
-                    return 1;
-                case 2:
-                    return 3;
-                default:
-                    assert(false);
-                    return 0;
-                }
-            };
-            auto vertex_id_to_child_id_nxt = [](int i) {
-                switch (i) {
-                case 0:
-                    return 0;
-                case 1:
-                    return 2;
-                case 2:
-                    return 3;
-                default:
-                    assert(false);
-                    return 0;
-                }
-            };
+                auto vertex_id_to_child_id_pre = [](int i) {
+                    switch (i) {
+                    case 0:
+                        return 0;
+                    case 1:
+                        return 1;
+                    case 2:
+                        return 3;
+                    default:
+                        assert(false);
+                        return 0;
+                    }
+                };
+                auto vertex_id_to_child_id_nxt = [](int i) {
+                    switch (i) {
+                    case 0:
+                        return 0;
+                    case 1:
+                        return 2;
+                    case 2:
+                        return 3;
+                    default:
+                        assert(false);
+                        return 0;
+                    }
+                };
 
-            f0 ? f->children[0]->neighbors[0] = f0->children[vertex_id_to_child_id_pre(f0->VertexId(f->v[0]))] : 0;
-            f->children[0]->neighbors[1] = f->children[1];
-            f2 ? f->children[0]->neighbors[2] = f2->children[vertex_id_to_child_id_nxt(f2->VertexId(f->v[0]))] : 0;
+                f0 ? f->children[0]->neighbors[0] = f0->children[vertex_id_to_child_id_pre(f0->VertexId(f->v[0]))] : 0;
+                f->children[0]->neighbors[1] = f->children[1];
+                f2 ? f->children[0]->neighbors[2] = f2->children[vertex_id_to_child_id_nxt(f2->VertexId(f->v[0]))] : 0;
 
-            f0 ? f->children[1]->neighbors[0] = f0->children[vertex_id_to_child_id_nxt(f0->VertexId(f->v[1]))] : 0;
-            f->children[1]->neighbors[1] = f->children[2];
-            f->children[1]->neighbors[2] = f->children[0];
+                f0 ? f->children[1]->neighbors[0] = f0->children[vertex_id_to_child_id_nxt(f0->VertexId(f->v[1]))] : 0;
+                f->children[1]->neighbors[1] = f->children[2];
+                f->children[1]->neighbors[2] = f->children[0];
 
-            f->children[2]->neighbors[0] = f->children[1];
-            f1 ? f->children[2]->neighbors[1] = f1->children[vertex_id_to_child_id_pre(f1->VertexId(f->v[1]))] : 0;
-            f->children[2]->neighbors[2] = f->children[3];
+                f->children[2]->neighbors[0] = f->children[1];
+                f1 ? f->children[2]->neighbors[1] = f1->children[vertex_id_to_child_id_pre(f1->VertexId(f->v[1]))] : 0;
+                f->children[2]->neighbors[2] = f->children[3];
 
-            f->children[3]->neighbors[0] = f->children[2];
-            f1 ? f->children[3]->neighbors[1] = f1->children[vertex_id_to_child_id_nxt(f1->VertexId(f->v[2]))] : 0;
-            f2 ? f->children[3]->neighbors[2] = f2->children[vertex_id_to_child_id_pre(f2->VertexId(f->v[2]))] : 0;
+                f->children[3]->neighbors[0] = f->children[2];
+                f1 ? f->children[3]->neighbors[1] = f1->children[vertex_id_to_child_id_nxt(f1->VertexId(f->v[2]))] : 0;
+                f2 ? f->children[3]->neighbors[2] = f2->children[vertex_id_to_child_id_pre(f2->VertexId(f->v[2]))] : 0;
 
-            // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
-        }
+                // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
+            }
+            // Update new sub-faces' vertexes.
+            {
+                f->v[1]->child->valence += 1;
 
-        // Update new sub-faces' vertexes.
-        for (auto& f : faces_base) {
-            f->v[1]->child->valence += 1;
+                Edge e[3];
+                for (int i = 0; i < 3; ++i)
+                    e[i] = { f->v[i], f->v[(i + 1) % 3] };
 
-            Edge e[3];
-            for (int i = 0; i < 3; ++i)
-                e[i] = { f->v[i], f->v[(i + 1) % 3] };
+                f->children[0]->v[0] = f->v[0]->child;
+                f->children[0]->v[1] = edge2vertex[e[0]];
+                f->children[0]->v[2] = edge2vertex[e[2]];
 
-            f->children[0]->v[0] = f->v[0]->child;
-            f->children[0]->v[1] = edge2vertex[e[0]];
-            f->children[0]->v[2] = edge2vertex[e[2]];
+                f->children[1]->v[0] = edge2vertex[e[0]];
+                f->children[1]->v[1] = f->v[1]->child;
+                f->children[1]->v[2] = edge2vertex[e[2]];
 
-            f->children[1]->v[0] = edge2vertex[e[0]];
-            f->children[1]->v[1] = f->v[1]->child;
-            f->children[1]->v[2] = edge2vertex[e[2]];
+                f->children[2]->v[0] = edge2vertex[e[2]];
+                f->children[2]->v[1] = f->v[1]->child;
+                f->children[2]->v[2] = edge2vertex[e[1]];
 
-            f->children[2]->v[0] = edge2vertex[e[2]];
-            f->children[2]->v[1] = f->v[1]->child;
-            f->children[2]->v[2] = edge2vertex[e[1]];
-
-            f->children[3]->v[0] = edge2vertex[e[2]];
-            f->children[3]->v[1] = edge2vertex[e[1]];
-            f->children[3]->v[2] = f->v[2]->child;
+                f->children[3]->v[0] = edge2vertex[e[2]];
+                f->children[3]->v[1] = edge2vertex[e[1]];
+                f->children[3]->v[2] = f->v[2]->child;
+            }
         }
 
         // All updates done. Replace the base with the new for further subdivisions.
