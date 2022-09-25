@@ -46,12 +46,19 @@ target_link_libraries(subface
 	glew_s
 	glfw
 )
-add_custom_command(TARGET subface POST_BUILD
+
+if(MSVC)
+	set(shader_dir ${PROJECT_BINARY_DIR}/$<CONFIG>/shader)
+else()
+	set(shader_dir ${PROJECT_BINARY_DIR}/shader)
+endif()
+add_custom_target(copy_shader_files ALL
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader $<TARGET_FILE_DIR:subface>/shader
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-	${CMAKE_CURRENT_SOURCE_DIR}/src/shader ${CMAKE_CURRENT_BINARY_DIR}/shader
+	${PROJECT_SOURCE_DIR}/src/shader
+	${shader_dir}
+	COMMENT "Copying shader files"
 )
+add_dependencies(subface copy_shader_files)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/glew-2.2.0)
 	file(DOWNLOAD
