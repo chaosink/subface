@@ -676,6 +676,18 @@ void LoopSubface::Tessellate4_1(int level)
                 const Face* f1 = f->neighbors[1];
                 const Face* f2 = f->neighbors[2];
 
+                int f0_v0_id = f0 ? f0->VertexId(f->v[0]) : -1;
+                int f0_v1_id = f0 ? f0->VertexId(f->v[1]) : -1;
+                int f1_v1_id = f1 ? f1->VertexId(f->v[1]) : -1;
+                int f1_v2_id = f1 ? f1->VertexId(f->v[2]) : -1;
+                int f2_v2_id = f2 ? f2->VertexId(f->v[2]) : -1;
+                int f2_v0_id = f2 ? f2->VertexId(f->v[0]) : -1;
+
+                // Consider neighbor triangles with opposite normals.
+                bool o0 = f0 ? f0->neighbors[f0_v0_id] == f : false;
+                bool o1 = f1 ? f1->neighbors[f1_v1_id] == f : false;
+                bool o2 = f2 ? f2->neighbors[f2_v2_id] == f : false;
+
                 auto vertex_id_to_child_id_pre = [](int i) {
                     switch (i) {
                     case 0:
@@ -703,21 +715,21 @@ void LoopSubface::Tessellate4_1(int level)
                     }
                 };
 
-                f0 ? f->children[0]->neighbors[0] = f0->children[vertex_id_to_child_id_pre(f0->VertexId(f->v[0]))] : 0;
+                f0 ? f->children[0]->neighbors[0] = f0->children[o0 ? vertex_id_to_child_id_nxt(f0_v0_id) : vertex_id_to_child_id_pre(f0_v0_id)] : 0;
                 f->children[0]->neighbors[1] = f->children[1];
-                f2 ? f->children[0]->neighbors[2] = f2->children[vertex_id_to_child_id_nxt(f2->VertexId(f->v[0]))] : 0;
+                f2 ? f->children[0]->neighbors[2] = f2->children[o2 ? vertex_id_to_child_id_pre(f2_v0_id) : vertex_id_to_child_id_nxt(f2_v0_id)] : 0;
 
-                f0 ? f->children[1]->neighbors[0] = f0->children[vertex_id_to_child_id_nxt(f0->VertexId(f->v[1]))] : 0;
+                f0 ? f->children[1]->neighbors[0] = f0->children[o0 ? vertex_id_to_child_id_pre(f0_v1_id) : vertex_id_to_child_id_nxt(f0_v1_id)] : 0;
                 f->children[1]->neighbors[1] = f->children[2];
                 f->children[1]->neighbors[2] = f->children[0];
 
                 f->children[2]->neighbors[0] = f->children[1];
-                f1 ? f->children[2]->neighbors[1] = f1->children[vertex_id_to_child_id_pre(f1->VertexId(f->v[1]))] : 0;
+                f1 ? f->children[2]->neighbors[1] = f1->children[o1 ? vertex_id_to_child_id_nxt(f1_v1_id) : vertex_id_to_child_id_pre(f1_v1_id)] : 0;
                 f->children[2]->neighbors[2] = f->children[3];
 
                 f->children[3]->neighbors[0] = f->children[2];
-                f1 ? f->children[3]->neighbors[1] = f1->children[vertex_id_to_child_id_nxt(f1->VertexId(f->v[2]))] : 0;
-                f2 ? f->children[3]->neighbors[2] = f2->children[vertex_id_to_child_id_pre(f2->VertexId(f->v[2]))] : 0;
+                f1 ? f->children[3]->neighbors[1] = f1->children[o1 ? vertex_id_to_child_id_pre(f1_v2_id) : vertex_id_to_child_id_nxt(f1_v2_id)] : 0;
+                f2 ? f->children[3]->neighbors[2] = f2->children[o2 ? vertex_id_to_child_id_nxt(f2_v2_id) : vertex_id_to_child_id_pre(f2_v2_id)] : 0;
 
                 // `f->children[ci]->neighbors[k]` is default as `nullptr`. No need to assign in `else`.
             }
