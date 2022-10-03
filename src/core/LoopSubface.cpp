@@ -903,19 +903,20 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
             Face* fn[2] { const_cast<Face*>(f->neighbors[v2_id]), const_cast<Face*>(f->neighbors[PREV(v2_id)]) };
 
             for (int i = 0; i < 2; ++i)
-                if (fn[i] && fn[i] != fn[1 - i] && fn[i]->VertexId(v0) != -1 && fn[i]->VertexId(v1) != -1)
-                    for (int k = 0; k < 3; ++k)
-                        if (fn[i]->neighbors[k] != f) {
-                            for (int l = 0; fn[i]->neighbors[k] && l < 3; ++l)
-                                if (fn[i]->neighbors[k]->neighbors[l] == fn[i]->neighbors[k])
-                                    const_cast<Face*>(fn[i]->neighbors[k])->neighbors[l] = fn[1 - i];
-                            for (int l = 0; fn[1 - i] && l < 3; ++l)
-                                if (fn[1 - i]->neighbors[l] == f)
-                                    fn[1 - i]->neighbors[l] = fn[i]->neighbors[k];
-                            if (v2->start_face == f || v2->start_face == fn[i])
-                                v2->start_face = fn[1 - i] ? fn[1 - i] : fn[i]->neighbors[k];
-                            break;
-                        }
+                if (fn[i] && fn[i] != fn[1 - i] && fn[i]->VertexId(v0) != -1 && fn[i]->VertexId(v1) != -1) {
+                    int k = NEXT(fn[i]->VertexId(v1));
+                    if (fn[i]->neighbors[k] == f)
+                        k = NEXT(fn[i]->VertexId(v0));
+                    assert(fn[i]->neighbors[k] != f);
+                    for (int l = 0; fn[i]->neighbors[k] && l < 3; ++l)
+                        if (fn[i]->neighbors[k]->neighbors[l] == fn[i]->neighbors[k])
+                            const_cast<Face*>(fn[i]->neighbors[k])->neighbors[l] = fn[1 - i];
+                    for (int l = 0; fn[1 - i] && l < 3; ++l)
+                        if (fn[1 - i]->neighbors[l] == f)
+                            fn[1 - i]->neighbors[l] = fn[i]->neighbors[k];
+                    if (v2->start_face == f || v2->start_face == fn[i])
+                        v2->start_face = fn[1 - i] ? fn[1 - i] : fn[i]->neighbors[k];
+                }
 
             for (int i = 0; i < 2; ++i)
                 if (fn[i] && (fn[i]->VertexId(v0) == -1 || fn[i]->VertexId(v1) == -1))
