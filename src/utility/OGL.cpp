@@ -317,8 +317,8 @@ void OGL::Update(const std::string& program_info)
     glfwSwapBuffers(window_);
 
     fps_.Update(time());
-    std::string title = fmt::format("{} | {:.2f} FPS | {} | {} | Cull {}",
-        window_title_, fps_.fps(), program_info, render_mode_names_[render_mode_], enable_cull_face_.state());
+    std::string title = fmt::format("{}.FPS_{:.2f}.{}",
+        window_title_, fps_.fps(), program_info);
     glfwSetWindowTitle(window_, title.c_str());
 
     glfwPollEvents();

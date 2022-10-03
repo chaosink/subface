@@ -69,6 +69,10 @@ public:
     {
         enable_cull_face_.state(cull);
     }
+    bool EnableCullFace() const
+    {
+        return enable_cull_face_.state();
+    }
     void EnableTransparentWindow(bool transparent)
     {
         enable_transparent_window_.state(transparent);
@@ -80,5 +84,9 @@ public:
     void FixCamera(bool fix_camera)
     {
         camera_->Fix(fix_camera);
+    }
+    std::string RenderModeName() const
+    {
+        return render_mode_names_[render_mode_];
     }
 };

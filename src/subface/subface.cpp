@@ -128,24 +128,6 @@ int main(int argc, char* argv[])
         }, [&]() {
             ogl.Normal(sf.NormalFlat());
         });
-
-        auto get_file_name = [&]() {
-            return fmt::format("{}.{}.{}",
-                file_path.substr(0, file_path.find_last_of('.')),
-                level == 0 ? "origin" : Subface::GetProcessingMethod(method).name + ".level_" + char('0' + level),
-                use_smooth_normal.state() ? "smooth" : "flat"
-            );
-        };
-
-        auto export_obj_func = [&]() {
-            sf.ExportObj(get_file_name() + ".obj", use_smooth_normal.state());
-        };
-        export_obj.Update(export_obj_func);
-
-        auto save_png_func = [&]() {
-            ogl.SavePng(get_file_name() + ".png");
-        };
-        save_png.Update(save_png_func);
         // clang-format on
 
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
@@ -163,14 +145,12 @@ int main(int argc, char* argv[])
             process(method, level);
         }
         if (Subface::PM_MeshoptDecimate <= method && method <= Subface::PM_Decimate_ShortestEdge_Midpoint) { // Decimation methods.
-            decimate_one_less_face.Update(
-                [&]() {
-                    process(method, -1); // `level == -1` means "decimate one less face".
-                });
-            decimate_one_more_face.Update(
-                [&]() {
-                    process(method, -2); // `level == -2` means "decimate one more face".
-                });
+            decimate_one_less_face.Update([&]() {
+                process(method, -1); // `level == -1` means "decimate one less face".
+            });
+            decimate_one_more_face.Update([&]() {
+                process(method, -2); // `level == -2` means "decimate one more face".
+            });
             if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
                 if (glfwGetKey(ogl.window(), GLFW_KEY_COMMA) == GLFW_PRESS)
                     process(method, -1); // `level == -1` means "decimate one less face
@@ -179,8 +159,34 @@ int main(int argc, char* argv[])
             }
         }
 
-        std::string program_info = fmt::format("{}(level={})",
-            Subface::GetProcessingMethod(method).name, level);
+        auto get_processing_info = [&]() {
+            return fmt::format("{}.Normal_{}",
+                level == 0 ? "origin" : fmt::format("{}(level={})", Subface::GetProcessingMethod(method).name, level),
+                use_smooth_normal.state() ? "smooth" : "flat");
+        };
+        auto get_rendering_info = [&]() {
+            return fmt::format("{}.Cull_{}",
+                ogl.RenderModeName(), ogl.EnableCullFace());
+        };
+
+        auto export_obj_func = [&]() {
+            std::string file_name = fmt::format("{}.{}.obj",
+                file_path.substr(0, file_path.find_last_of('.')),
+                get_processing_info());
+            sf.ExportObj(file_name, use_smooth_normal.state());
+        };
+        export_obj.Update(export_obj_func);
+
+        auto save_png_func = [&]() {
+            std::string file_name = fmt::format("{}.{}.{}.png",
+                file_path.substr(0, file_path.find_last_of('.')),
+                get_processing_info(), get_rendering_info());
+            ogl.SavePng(file_name);
+        };
+        save_png.Update(save_png_func);
+
+        std::string program_info = fmt::format("{}.{}",
+            get_processing_info(), get_rendering_info());
         ogl.Update(program_info);
 
         if (cmd_mode) {

@@ -36,7 +36,7 @@ public:
     // Call `F()` when `state_` changes.
     bool Update(const std::function<void()>& F);
     bool Update();
-    bool state()
+    bool state() const
     {
         return state_;
     }
