@@ -1117,6 +1117,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
 
     Vertex* v0 = const_cast<Vertex*>(collapse_e.v[0]);
     Vertex* v1 = const_cast<Vertex*>(collapse_e.v[1]);
+    Vertex* v01[2] { v0, v1 };
 
     std::vector<const Face*> sweep = v1->OneSweep();
     int face_count_to_decimate_for_this_collapse = 0;
@@ -1192,7 +1193,6 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
 
     if (midpoint) {
         std::vector<const Vertex*> ring_remain;
-        Vertex* v01[2] { v0, v1 };
         for (int i = 0; i < 2; ++i)
             for (auto v : ring[i]) {
                 auto e_it = queue.find({ v, v01[i] });
@@ -1264,6 +1264,22 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
 
     // `Vertex::child` is initialized as `nullptr`. Use it to flag deletion.
     v1->child = reinterpret_cast<Vertex*>(1);
+
+    /* Delete all the edges with the degenerated v0 and v1. */
+    // for (auto v : v01)
+    //     if (v->start_face == nullptr || v->start_face->children[0] || v->child) {
+    //         std::vector<QueueEdge> erase_e;
+    //         for (const QueueEdge& e : queue) {
+    //             // assert(e.v[0] != v && e.v[1] != v);
+    //             for (int i = 0; i < 2; ++i)
+    //                 if (e.v[i] == v) {
+    //                     erase_e.push_back(e);
+    //                     break;
+    //                 }
+    //         }
+    //         for (const QueueEdge& e : erase_e)
+    //             queue.erase(e);
+    //     }
 
     return face_count_to_decimate_for_this_collapse;
 }
