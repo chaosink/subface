@@ -29,16 +29,13 @@ add_library(meshoptimizer
 	src/thirdparty/meshoptimizer/simplifier.cpp
 	src/thirdparty/meshoptimizer/vfetchoptimizer.cpp
 )
-add_library(Timer
-	src/utility/Timer.cpp
-)
 add_library(core
 	src/core/Subface.cpp
+	src/utility/Timer.cpp
 )
-target_link_libraries(core
+target_link_libraries(core PRIVATE
 	spdlog::spdlog
 	meshoptimizer
-	Timer
 )
 
 add_library(utility
@@ -49,7 +46,8 @@ add_library(utility
 	src/utility/Timer.cpp
 	src/utility/Toggle.cpp
 )
-target_link_libraries(utility
+target_link_libraries(utility PRIVATE
+	spdlog::spdlog
 	glew_s
 	glfw
 )
@@ -58,6 +56,7 @@ add_executable(subface
 	src/subface/subface.cpp
 )
 target_link_libraries(subface
+	spdlog::spdlog
 	core
 	utility
 )

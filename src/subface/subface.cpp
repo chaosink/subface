@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <argparse/argparse.hpp>
-#include <spdlog/fmt/fmt.h>
+#include <spdlog/spdlog.h>
 
 #include "Model.hpp"
 #include "OGL.hpp"
