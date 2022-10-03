@@ -13,6 +13,17 @@ using namespace std;
 #include "LoopSubface.hpp"
 using namespace subface;
 
+enum EProcessingMethod {
+    PM_SubdivideSmooth,
+    PM_SubdivideSmoothNoLimit,
+    PM_SubdivideFlat,
+    PM_Tessellate4,
+    PM_Tessellate4_1,
+    PM_Tessellate3,
+    PM_MeshoptDecimate,
+    PM_MeshoptDecimateSloppy,
+    PM_Count,
+};
 struct ProcessingMethod {
     std::string name;
     std::function<void(LoopSubface& ls, int level)> process;
@@ -52,11 +63,11 @@ std::vector<ProcessingMethod> processing_methods = {
         } }, // Key 8
 };
 
-enum RenderMode {
-    RenderMode_FacesWireframe,
-    RenderMode_FacesOnly,
-    RenderMode_WireframeOnly,
-    RenderMode_Count,
+enum ERenderMode {
+    RM_FacesWireframe,
+    RM_FacesOnly,
+    RM_WireframeOnly,
+    RM_Count,
 };
 std::vector<std::string> render_mode_names {
     "FacesWireframe",
@@ -67,17 +78,18 @@ std::vector<std::string> render_mode_names {
 int main(int argc, char* argv[])
 {
     bool cmd_mode = false;
-    int cmd_method = 0, cmd_level = 0;
+    EProcessingMethod cmd_method = PM_SubdivideSmooth;
+    int cmd_level = 0;
     if (argc < 2) {
         std::cout << "Usage: subface model_file [processing_method_id level]" << std::endl;
         std::cout << "Cmd mode with OBJ export and PNG save is used if processing_method_id and level is specified." << std::endl;
         std::cout << "All processing methods:" << std::endl;
-        for (int i = 0; i < processing_methods.size(); ++i)
+        for (int i = 0; i < PM_Count; ++i)
             std::cout << fmt::format("    {}.{}", i + 1, processing_methods[i].name) << std::endl;
         return 0;
     } else if (argc == 4) {
         cmd_mode = true;
-        cmd_method = atoi(argv[2]) - 1;
+        cmd_method = static_cast<EProcessingMethod>(atoi(argv[2]) - 1);
         cmd_level = atoi(argv[3]);
     }
     const std::string file_path = argv[1];
@@ -93,22 +105,29 @@ int main(int argc, char* argv[])
 
     LoopSubface ls;
     ls.BuildTopology(model.indexed_vertex(), model.index());
-    ls.Subdivide(0, false, true);
-
-    // ogl.Vertex(model.vertex());
-    // ogl.Normal(model.normal());
-    ogl.Vertex(ls.vertex());
-    ogl.Normal(ls.normal_flat());
 
     Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
-    RenderMode render_mode = RenderMode_FacesWireframe;
+    ERenderMode render_mode = RM_FacesWireframe;
     Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
     Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
     Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
     Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
-    int method = 0, method_old = -1;
-    int level = 0, level_old = -1;
+    EProcessingMethod method = PM_SubdivideSmooth, method_old = PM_SubdivideSmooth;
+    int level = 0, level_old = 0;
+
+    auto process = [&](int method, int level) {
+        processing_methods[method].process(ls, level);
+        ogl.Vertex(ls.vertex());
+        if (enable_smooth_normal.state())
+            ogl.Normal(ls.normal_smooth());
+        else
+            ogl.Normal(ls.normal_flat());
+
+        // ogl.Vertex(model.vertex());
+        // ogl.Normal(model.normal());
+    };
+    process(method, level);
 
     double time = ogl.time();
     Camera camera(ogl.window(), window_w, window_h, time);
@@ -130,7 +149,7 @@ int main(int argc, char* argv[])
 
         // clang-format off
         switch_render_mode.Update([&]() {
-            render_mode = static_cast<RenderMode>((render_mode + 1) % RenderMode_Count);
+            render_mode = static_cast<ERenderMode>((render_mode + 1) % RM_Count);
         });
 
         enable_smooth_normal.Update([&]() {
@@ -173,34 +192,29 @@ int main(int argc, char* argv[])
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
             if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-                    if (GLFW_KEY_1 <= key && key <= GLFW_KEY_0 + processing_methods.size())
-                        method = (key - GLFW_KEY_1) % static_cast<int>(processing_methods.size());
+                    if (GLFW_KEY_1 <= key && key <= GLFW_KEY_0 + PM_Count)
+                        method = static_cast<EProcessingMethod>((key - GLFW_KEY_1) % PM_Count);
                 } else
                     level = key - GLFW_KEY_0;
 
         if (level != level_old || method != method_old) {
             level_old = level;
             method_old = method;
-            processing_methods[method].process(ls, level);
-            ogl.Vertex(ls.vertex());
-            if (enable_smooth_normal.state())
-                ogl.Normal(ls.normal_smooth());
-            else
-                ogl.Normal(ls.normal_flat());
+            process(method, level);
         }
 
-        if (render_mode == RenderMode_FacesWireframe) {
+        if (render_mode == RM_FacesWireframe) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
             ogl.Uniform("wireframe", 1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
-        } else if (render_mode == RenderMode_FacesOnly) {
+        } else if (render_mode == RM_FacesOnly) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             ogl.Draw();
-        } else if (render_mode == RenderMode_WireframeOnly) {
+        } else if (render_mode == RM_WireframeOnly) {
             ogl.Uniform("wireframe", 0);
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             ogl.Draw();
