@@ -45,6 +45,11 @@ Camera::Camera(GLFWwindow* window, int window_w, int window_h, double time)
 
 void Camera::Update(double time)
 {
+    update_fix_.Update([&]() {
+        mv_fix_ = mv_;
+        mvp_fix_ = mvp_;
+    });
+
     fix_.Update();
     if (fix_.state()) {
         mv_ = mv_fix_;

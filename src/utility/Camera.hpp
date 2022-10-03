@@ -40,6 +40,7 @@ class Camera {
 
     Toggle fix_ = Toggle(window_, GLFW_KEY_F, false);
     Toggle print_vp_ = Toggle(window_, GLFW_KEY_P, false);
+    Toggle update_fix_ = Toggle(window_, GLFW_KEY_R, false);
     bool mouse_button_left_pressed_ = false;
     bool mouse_button_right_pressed_ = false;
 
