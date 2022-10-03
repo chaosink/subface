@@ -801,12 +801,12 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     result_indexes.resize(result_index_count);
 
     std::vector<glm::vec3> result_positions(position_count);
-    size_t result_positions_count = 0;
+    size_t result_position_count = 0;
     // `result_index_count` may be 0 meaning all the triangles are decimated.
     if (result_index_count)
-        result_positions_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
+        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
             &origin_positions_[0].x, position_count, sizeof(glm::vec3));
-    result_positions.resize(result_positions_count);
+    result_positions.resize(result_position_count);
 
     std::vector<Vertex> vertexes;
     std::vector<Face> faces;
