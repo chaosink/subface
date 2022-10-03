@@ -883,15 +883,16 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
         if (decimate_face_count - face_count_to_decimate_for_this_collapse < target_face_count)
             return false;
     }
+
     std::vector<const Vertex*> ring = v1->OneRing();
 
     std::vector<Face*> collapse_f;
     std::vector<Vertex*> collapse_f_v;
+
     for (const Face* f_const : sweep) {
         Face* f = const_cast<Face*>(f_const);
         int v1_id = f->VertexId(v1);
         int v0_id = f->VertexId(v0);
-        f->v[v1_id] = v0;
 
         if (v0_id != -1) {
             collapse_f.push_back(f);
@@ -910,7 +911,8 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
                             for (int l = 0; fn[1 - i] && l < 3; ++l)
                                 if (fn[1 - i]->neighbors[l] == f)
                                     fn[1 - i]->neighbors[l] = fn[i]->neighbors[k];
-                            fn[i] = const_cast<Face*>(fn[i]->neighbors[k]);
+                            if (v2->start_face == f || v2->start_face == fn[i])
+                                v2->start_face = fn[1 - i] ? fn[1 - i] : fn[i]->neighbors[k];
                             break;
                         }
 
@@ -920,19 +922,26 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
                         if (fn[i]->neighbors[j] == f) {
                             fn[i]->neighbors[j] = fn[1 - i];
                         }
+            if (v2->start_face == f)
+                v2->start_face = fn[0] ? fn[0] : fn[1];
 
             QueueEdge e(v1, v2);
             auto e_it = queue.find(e);
             if (e_it != queue.end())
                 queue.erase(e_it);
 
-            if (v2->start_face == f)
-                v2->start_face = fn[0] ? fn[0] : fn[1];
-
             // `Face::children[k]` are initialized as `nullptr`. Use the first child to flag deletion.
             f->children[0] = reinterpret_cast<Face*>(1);
             decimate_face_count--;
         }
+    }
+
+    // Should always seperate updates of faces' neighbors and vertexes to reduce the possibility of bugs.
+    // Update faces' neighbors first, then vertexes.
+    for (const Face* f_const : sweep) {
+        Face* f = const_cast<Face*>(f_const);
+        int v1_id = f->VertexId(v1);
+        f->v[v1_id] = v0;
     }
 
     for (auto v : ring) {
