@@ -979,10 +979,27 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
     std::sort(collapse_f_v.begin(), collapse_f_v.end());
     auto v_it_end = std::unique(collapse_f_v.begin(), collapse_f_v.end());
     for (auto v_it = collapse_f_v.begin(); v_it != v_it_end; ++v_it)
-        if ((*v_it)->start_face && (*v_it)->start_face->children[0] == nullptr)
+        if ((*v_it)->start_face && (*v_it)->start_face->children[0] == nullptr) {
             (*v_it)->ComputeValence();
-        else
+        } else {
+            auto e_it = queue.find({ *v_it, v0 });
+            if (e_it != queue.end())
+                queue.erase(e_it);
             (*v_it)->child = reinterpret_cast<Vertex*>(1);
+
+            /* Delete all the edges with the degenerated v2. */
+            // std::vector<QueueEdge> collapse_f_v_e;
+            // for (const QueueEdge& e : queue) {
+            //     // assert(e.v[0] != *v_it && e.v[1] != *v_it);
+            //     for (int i = 0; i < 2; ++i)
+            //         if (e.v[i] == *v_it) {
+            //             collapse_f_v_e.push_back(e);
+            //             break;
+            //         }
+            // }
+            // for (const QueueEdge& e : collapse_f_v_e)
+            //     queue.erase(e);
+        }
 
     // `Vertex::child` is initialized as `nullptr`. Use it to flag deletion.
     v1->child = reinterpret_cast<Vertex*>(1);
