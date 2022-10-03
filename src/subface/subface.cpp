@@ -22,7 +22,8 @@ enum EProcessingMethod {
     PM_Tessellate3,
     PM_MeshoptDecimate,
     PM_MeshoptDecimateSloppy,
-    PM_Decimate,
+    PM_Decimate_ShortestEdge_V0,
+    PM_Decimate_ShortestEdge_Midpoint,
     PM_Count,
 };
 struct ProcessingMethod {
@@ -62,10 +63,14 @@ std::vector<ProcessingMethod> processing_methods = {
         [](LoopSubface& ls, int level) {
             ls.MeshoptDecimate(level, true);
         } }, // Key 8
-    { "Decimate",
+    { "Decimate_ShortestEdge_V0",
         [](LoopSubface& ls, int level) {
-            ls.Decimate(level);
+            ls.Decimate(level, false);
         } }, // Key 9
+    { "Decimate_ShortestEdge_Midpoint",
+        [](LoopSubface& ls, int level) {
+            ls.Decimate(level, true);
+        } }, // Key 0
 };
 
 enum ERenderMode {
@@ -199,8 +204,8 @@ int main(int argc, char* argv[])
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
             if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-                    if (GLFW_KEY_1 <= key && key <= GLFW_KEY_0 + PM_Count)
-                        method = static_cast<EProcessingMethod>((key - GLFW_KEY_1) % PM_Count);
+                    if (GLFW_KEY_0 <= key && key <= GLFW_KEY_0 + PM_Count)
+                        method = static_cast<EProcessingMethod>((key - GLFW_KEY_1 + PM_Count) % PM_Count);
                 } else
                     level = key - GLFW_KEY_0;
 
@@ -209,7 +214,7 @@ int main(int argc, char* argv[])
             method_old = method;
             process(method, level);
         }
-        if (PM_MeshoptDecimate <= method && method <= PM_Decimate) { // Decimation methods.
+        if (PM_MeshoptDecimate <= method && method <= PM_Decimate_ShortestEdge_Midpoint) { // Decimation methods.
             decimate_one_less_face.Update(
                 [&]() {
                     process(method, -1); // `level == -1` means "decimate one less face".

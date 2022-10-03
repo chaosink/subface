@@ -866,7 +866,8 @@ struct QueueEdge {
     }
 };
 
-bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::set<QueueEdge>& queue, size_t& decimate_face_count, size_t target_face_count, bool round_down)
+bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::set<QueueEdge>& queue, size_t& decimate_face_count,
+    size_t target_face_count, bool round_down, bool midpoint)
 {
     const QueueEdge collapse_e = *queue.begin();
     queue.erase(queue.begin());
@@ -884,8 +885,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
             return false;
     }
 
-    std::vector<const Vertex*> ring0 = v0->OneRing();
-    std::vector<const Vertex*> ring1 = v1->OneRing();
+    std::vector<const Vertex*> ring[2] { v0->OneRing(), v1->OneRing() };
 
     std::vector<Face*> collapse_f;
     std::vector<Vertex*> collapse_f_v;
@@ -946,11 +946,28 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
         f->v[v1_id] = v0;
     }
 
-    for (auto v : ring1) {
-        auto e_it = queue.find({ v, v1 });
-        if (e_it != queue.end()) {
-            queue.erase(e_it);
+    if (midpoint) {
+        std::vector<const Vertex*> ring_remain;
+        Vertex* v01[2] { v0, v1 };
+        for (int i = 0; i < 2; ++i)
+            for (auto v : ring[i]) {
+                auto e_it = queue.find({ v, v01[i] });
+                if (e_it != queue.end()) {
+                    queue.erase(e_it);
+                    ring_remain.push_back(v);
+                }
+            }
+        if (midpoint)
+            v0->p = (v0->p + v1->p) * 0.5f;
+        for (auto v : ring_remain)
             queue.insert({ v, v0 });
+    } else {
+        for (auto v : ring[1]) {
+            auto e_it = queue.find({ v, v1 });
+            if (e_it != queue.end()) {
+                queue.erase(e_it);
+                queue.insert({ v, v0 });
+            }
         }
     }
 
@@ -968,7 +985,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
         v0->ComputeStartFaceAndBoundary();
         v0->ComputeValence();
     } else {
-        for (auto v : ring0) {
+        for (auto v : ring[0]) {
             auto e_it = queue.find({ v, v0 });
             if (e_it != queue.end())
                 queue.erase(e_it);
@@ -1007,7 +1024,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
     return face_count_to_decimate_for_this_collapse;
 }
 
-void LoopSubface::Decimate(int level)
+void LoopSubface::Decimate(int level, bool midpoint)
 {
     std::string func_name = fmt::format("LoopSubface::Decimate(level={})", level);
     Timer timer(func_name);
@@ -1037,11 +1054,11 @@ void LoopSubface::Decimate(int level)
     if (level == -1) {
         // An edge collapse may decimate more than 1 face (2 usually, 1 for border edges, >2 for corner cases).
         // Use round up mode (with the last parameter `round_down==false`) here to ensure we can increase the face count successfully.
-        while (decimate_face_count > target_face_count && CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, false))
+        while (decimate_face_count > target_face_count && CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, false, midpoint))
             ;
     } else {
         while (decimate_face_count > target_face_count)
-            CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, true);
+            CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, true, midpoint);
     }
     result_face_count_ = decimate_face_count;
 

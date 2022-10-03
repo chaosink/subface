@@ -58,7 +58,7 @@ public:
     // else:
     //     Sacrifice mesh appearance for simplification performance.
     void MeshoptDecimate(int level, bool sloppy);
-    void Decimate(int level);
+    void Decimate(int level, bool midpoint);
 
     const std::vector<glm::vec3>& vertex() const
     {
