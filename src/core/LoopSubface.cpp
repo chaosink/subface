@@ -36,73 +36,27 @@ void LoopSubface::BuildTopology(const std::vector<glm::vec3>& positions, const s
     // Compute faces' neighbors.
     // A local variable for temp usage.
     std::set<Edge> edges;
-    for (int i = 0; i < face_count; ++i) {
-        Face* f = &faces[i];
+    for (Face& f : faces)
         for (int vi = 0; vi < 3; ++vi) {
             int v0 = vi, v1 = NEXT(vi);
-            Edge e(f->v[v0], f->v[v1]);
+            Edge e(f.v[v0], f.v[v1]);
             auto e_it = edges.find(e);
             if (e_it == edges.end()) {
-                e.f = f;
+                e.f = &f;
                 e.id = vi;
                 edges.insert(e);
             } else {
-                e_it->f->neighbors[e_it->id] = f;
-                f->neighbors[vi] = e_it->f;
+                e_it->f->neighbors[e_it->id] = &f;
+                f.neighbors[vi] = e_it->f;
                 edges.erase(e_it);
             }
         }
-    }
 
     // Update vertexes' `start_face`. Initialize vertexes' `boundary`, `valence` and `regular`.
-    for (int i = 0; i < vertex_count; ++i) {
-        Vertex* v = &vertexes[i];
-
-        const Face *f = v->start_face, *f_last = nullptr;
-
-        /* Use `f_next == f_last` to detect opposite neighbor triangles. */
-        do {
-            const Face* fn = f->PrevNeighbor(v);
-            // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `fn == f_last`.
-            // Besides, traversal here can stop as long as `fn == nullptr`. This is the reason of checking `fn`.
-            if (fn && fn == f_last)
-                fn = f->NextNeighbor(v);
-            f_last = f;
-            f = fn;
-        } while (f && f != v->start_face);
-
-        /* Use `OppositeNeighbor()` to detect opposite neighbor triangles. */
-        // bool f_opposite = false; // Always treat the first face as non-opposite.
-        // do {
-        //     int fn_id = PREV(f->VertexId(v));
-        //     // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `f_opposite`.
-        //     if (f_opposite)
-        //         fn_id = NEXT(fn_id);
-        //     const Face* fn = f->neighbors[fn_id];
-        //     f_opposite ^= f->OppositeNeighbor(fn_id);
-        //     f_last = f;
-        //     f = fn;
-        // } while (f && f != v->start_face);
-
-        if (f == nullptr) {
-            v->boundary = true;
-            // Update `start_face`, especially for boundary vertexes.
-            v->start_face = f_last;
-        }
-
-        v->ComputeValence();
-
-        //   \ /   //
-        // -- * -- //
-        //   / \   //
-        if (!v->boundary && v->valence == 6)
-            v->regular = true;
-        //   \ /   //
-        // -- * -- //
-        else if (v->boundary && v->valence == 4)
-            v->regular = true;
-        else
-            v->regular = false;
+    for (Vertex& v : vertexes) {
+        v.ComputeStartFaceAndBoundary();
+        v.ComputeValence();
+        v.ComputeRegular();
     }
 }
 

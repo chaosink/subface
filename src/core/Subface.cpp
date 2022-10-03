@@ -2,12 +2,62 @@
 
 namespace subface {
 
+void Vertex::ComputeStartFaceAndBoundary()
+{
+    const Face *f = start_face, *f_last = nullptr;
+
+    /* Use `f_next == f_last` to detect opposite neighbor triangles. */
+    do {
+        const Face* fn = f->PrevNeighbor(this);
+        // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `fn == f_last`.
+        // Besides, traversal here can stop as long as `fn == nullptr`. This is the reason of checking `fn`.
+        if (fn && fn == f_last)
+            fn = f->NextNeighbor(this);
+        f_last = f;
+        f = fn;
+    } while (f && f != start_face);
+
+    /* Use `OppositeNeighbor()` to detect opposite neighbor triangles. */
+    // bool f_opposite = false; // Always treat the first face as non-opposite.
+    // do {
+    //     int fn_id = PREV(f->VertexId(v));
+    //     // Check the comments in `Vertex::TraverseFaces()` for the reason of checking `f_opposite`.
+    //     if (f_opposite)
+    //         fn_id = NEXT(fn_id);
+    //     const Face* fn = f->neighbors[fn_id];
+    //     f_opposite ^= f->OppositeNeighbor(fn_id);
+    //     f_last = f;
+    //     f = fn;
+    // } while (f && f != v->start_face);
+
+    if (f == nullptr) {
+        boundary = true;
+        // Update `start_face`, especially for boundary vertexes.
+        start_face = f_last;
+    }
+}
+
 void Vertex::ComputeValence()
 {
     valence = boundary ? 1 : 0;
     TraverseFaces([&](const Face*) {
         ++valence;
     });
+}
+
+void Vertex::ComputeRegular()
+{
+    //   \ /   //
+    // -- * -- //
+    //   / \   //
+    if (!boundary && valence == 6)
+        regular = true;
+    //   \ /   //
+    // -- * -- //
+    else if (boundary && valence == 4)
+        regular = true;
+    else
+        regular = false;
 }
 
 std::vector<const Vertex*> Vertex::OneRing() const
