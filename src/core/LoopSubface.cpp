@@ -796,16 +796,32 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
     size_t target_index_count = static_cast<size_t>(index_count * threshold);
     if (level == -1)
-        target_index_count = (result_face_count_ + 2) * 3;
+        target_index_count = std::min((result_face_count_ + 1) * 3, index_count);
     else if (level == -2)
-        target_index_count = (result_face_count_ - 2) * 3;
+        target_index_count = std::max(size_t(1), result_face_count_) * 3 - 3;
     float target_error = 1.f;
 
     std::vector<uint32_t> result_indexes(index_count);
+    size_t result_index_count = 0;
     // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
-    int result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
-        &origin_positions_[0].x, position_count, sizeof(glm::vec3),
-        target_index_count, target_error);
+    if (level == -1) {
+        size_t target_index_count_temp = target_index_count;
+        // Meshopt simplifies index count to a round-down number. To ensure we can increase the face count successfully,
+        // we progressively increase `target_index_count_temp` to get `result_index_count` larger than `target_index_count`.
+        while (true) {
+            result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
+                &origin_positions_[0].x, position_count, sizeof(glm::vec3),
+                target_index_count_temp, target_error);
+            if (result_index_count < target_index_count)
+                target_index_count_temp += 3;
+            else
+                break;
+        }
+    } else {
+        result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
+            &origin_positions_[0].x, position_count, sizeof(glm::vec3),
+            target_index_count, target_error);
+    }
     result_face_count_ = result_index_count / 3;
     result_indexes.resize(result_index_count);
 
@@ -850,7 +866,7 @@ struct QueueEdge {
     }
 };
 
-void CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::set<QueueEdge>& queue, size_t& decimate_face_count)
+bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::set<QueueEdge>& queue, size_t& decimate_face_count, size_t target_face_count, bool round_down)
 {
     const QueueEdge collapse_e = *queue.begin();
     queue.erase(queue.begin());
@@ -859,6 +875,14 @@ void CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
     Vertex* v1 = const_cast<Vertex*>(collapse_e.v[1]);
 
     std::vector<const Face*> sweep = v1->OneSweep();
+    int face_count_to_decimate_for_this_collapse = 0;
+    if (!round_down) {
+        for (const Face* f : sweep)
+            if (f->VertexId(v0) != -1)
+                ++face_count_to_decimate_for_this_collapse;
+        if (decimate_face_count - face_count_to_decimate_for_this_collapse < target_face_count)
+            return false;
+    }
     std::vector<const Vertex*> ring = v1->OneRing();
 
     std::vector<Face*> collapse_f;
@@ -946,6 +970,8 @@ void CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
 
     // `Vertex::child` is initialized as `nullptr`. Use it to flag deletion.
     v1->child = reinterpret_cast<Vertex*>(1);
+
+    return face_count_to_decimate_for_this_collapse;
 }
 
 void LoopSubface::Decimate(int level)
@@ -965,9 +991,9 @@ void LoopSubface::Decimate(int level)
     float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
     size_t target_face_count = static_cast<size_t>(faces_.size() * threshold);
     if (level == -1)
-        target_face_count = result_face_count_ + 2;
+        target_face_count = result_face_count_ + 1;
     else if (level == -2)
-        target_face_count = result_face_count_ - 2;
+        target_face_count = std::max(size_t(1), result_face_count_) - 1;
 
     std::set<QueueEdge> queue;
     for (auto& f : faces)
@@ -975,9 +1001,16 @@ void LoopSubface::Decimate(int level)
             queue.insert({ f.v[vi], f.v[NEXT(vi)] });
 
     size_t decimate_face_count = face_count;
-    while (decimate_face_count > target_face_count)
-        CollapseEdge(vertexes, faces, queue, decimate_face_count);
-    result_face_count_ = target_face_count;
+    if (level == -1) {
+        // An edge collapse may decimate more than 1 face (2 usually, 1 for border edges, >2 for corner cases).
+        // Use round up mode (with the last parameter `round_down==false`) here to ensure we can increase the face count successfully.
+        while (decimate_face_count > target_face_count && CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, false))
+            ;
+    } else {
+        while (decimate_face_count > target_face_count)
+            CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, true);
+    }
+    result_face_count_ = decimate_face_count;
 
     std::vector<Vertex*> vertexes_base;
     std::vector<Face*> faces_base;
