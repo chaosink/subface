@@ -103,117 +103,202 @@ key | function
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="./result/suzanne_level-0_flat.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.FacesWireframe.Cull_true.png"></img>
 		</td>
 		<td>
-			<img src="./result/suzanne_level-0_face.png"></img>
+			<img src="result/rendering_modes/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.FacesOnly.Cull_true.png"></img>
 		</td>
 	</tr>
 	<!-- WireframeOnly with face culling, WireframeOnly without face culling -->
 	<tr align="center">
 		<th>
-			WireframeOnly without face culling
+			WireframeOnly, Cull_false
 		</th>
 		<th>
-			WireframeOnly with face culling
+			WireframeOnly, Cull_true
 		</th>
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="./result/suzanne_level-0_wireframe_no-cull-face.png"></img>
+			<img src="result/rendering_modes/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.WireframeOnly.Cull_false.png"></img>
 		</td>
 		<td>
-			<img src="./result/suzanne_level-0_wireframe_cull-face.png"></img>
+			<img src="result/rendering_modes/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.WireframeOnly.Cull_true.png"></img>
 		</td>
 	</tr>
 </table>
 
-* 1.LoopSubdivideSmooth, flat vs smooth
+* 1.LoopSubdivideSmooth, Normal_flat vs Normal_smooth
 
 <table>
 	<!-- original mesh -->
 	<tr align="center">
 		<th>
-			original mesh, flat
+			original mesh, Normal_flat
 		</th>
 		<th>
-			original mesh, smooth
+			original mesh, Normal_smooth
 		</th>
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="./result/suzanne_level-0_flat.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.FacesWireframe.Cull_true.png"></img>
 		</td>
 		<td>
-			<img src="./result/suzanne_level-0_smooth.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=0).Normal_smooth.FacesWireframe.Cull_true.png"></img>
 		</td>
 	</tr>
-	<!-- level 1 -->
+	<!-- level=1 -->
 	<tr align="center">
 		<th>
-			level 1, flat
+			level=1, Normal_flat
 		</th>
 		<th>
-			level 1, smooth
-		</th>
-	</tr>
-	<tr align="center">
-		<td>
-			<img src="./result/suzanne_level-1_flat.png"></img>
-		</td>
-		<td>
-			<img src="./result/suzanne_level-1_smooth.png"></img>
-		</td>
-	</tr>
-	<!-- level 2 -->
-	<tr align="center">
-		<th>
-			level 2, flat
-		</th>
-		<th>
-			level 2, smooth
+			level=1, Normal_smooth
 		</th>
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="./result/suzanne_level-2_flat.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=1).Normal_flat.FacesWireframe.Cull_true.png"></img>
 		</td>
 		<td>
-			<img src="./result/suzanne_level-2_smooth.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=1).Normal_smooth.FacesWireframe.Cull_true.png"></img>
 		</td>
 	</tr>
-	<!-- level 3 -->
+	<!-- level=2 -->
 	<tr align="center">
 		<th>
-			level 3, flat
+			level=2, Normal_flat
 		</th>
 		<th>
-			level 3, smooth
-		</th>
-	</tr>
-	<tr align="center">
-		<td>
-			<img src="./result/suzanne_level-3_flat.png"></img>
-		</td>
-		<td>
-			<img src="./result/suzanne_level-3_smooth.png"></img>
-		</td>
-	</tr>
-	<!-- level 4 -->
-	<tr align="center">
-		<th>
-			level 4, flat
-		</th>
-		<th>
-			level 4, smooth
+			level=2, Normal_smooth
 		</th>
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="./result/suzanne_level-4_flat.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=2).Normal_flat.FacesWireframe.Cull_true.png"></img>
 		</td>
 		<td>
-			<img src="./result/suzanne_level-4_smooth.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=2).Normal_smooth.FacesWireframe.Cull_true.png"></img>
+		</td>
+	</tr>
+	<!-- level=3 -->
+	<tr align="center">
+		<th>
+			level=3, Normal_flat
+		</th>
+		<th>
+			level=3, Normal_smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=3).Normal_flat.FacesWireframe.Cull_true.png"></img>
+		</td>
+		<td>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=3).Normal_smooth.FacesWireframe.Cull_true.png"></img>
+		</td>
+	</tr>
+	<!-- level=4 -->
+	<tr align="center">
+		<th>
+			level=4, Normal_flat
+		</th>
+		<th>
+			level=4, Normal_smooth
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=4).Normal_flat.FacesWireframe.Cull_true.png"></img>
+		</td>
+		<td>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=4).Normal_smooth.FacesWireframe.Cull_true.png"></img>
+		</td>
+	</tr>
+</table>
+
+* processing methods, level=2
+
+<table>
+	<tr align="center">
+		<th>
+			LoopSubdivideSmooth
+		</th>
+		<th>
+			LoopSubdivideSmoothNoLimit
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/processing_methods/suzanne.LoopSubdivideSmooth(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.LoopSubdivideSmoothNoLimit(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+	</tr>
+	<tr align="center">
+		<th>
+			LoopSubdivideFlat
+		</th>
+		<th>
+			Tessellate4
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/processing_methods/suzanne.LoopSubdivideFlat(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.Tessellate4(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+	</tr>
+	<tr align="center">
+		<th>
+			Tessellate4_1
+		</th>
+		<th>
+			Tessellate3
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/processing_methods/suzanne.Tessellate4_1(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.Tessellate3(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+	</tr>
+	<tr align="center">
+		<th>
+			MeshoptDecimate
+		</th>
+		<th>
+			MeshoptDecimateSloppy
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/processing_methods/suzanne.MeshoptDecimate(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.MeshoptDecimateSloppy(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+	</tr>
+	<tr align="center">
+		<th>
+			Decimate_ShortestEdge_V0
+		</th>
+		<th>
+			Decimate_ShortestEdge_Midpoint
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_V0(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_Midpoint(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 	</tr>
 </table>
