@@ -7,3 +7,6 @@
 [submodule "src/thirdparty/spdlog"]
 	path = src/thirdparty/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "src/thirdparty/argparse"]
+	path = src/thirdparty/argparse
+	url = https://github.com/p-ranav/argparse.git
