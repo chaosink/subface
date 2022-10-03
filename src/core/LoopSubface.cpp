@@ -1026,7 +1026,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
 
 void LoopSubface::Decimate(int level, bool midpoint)
 {
-    std::string func_name = fmt::format("LoopSubface::Decimate(level={})", level);
+    std::string func_name = fmt::format("LoopSubface::Decimate(level={}, midpoint={})", level, midpoint);
     Timer timer(func_name);
 
     if (level >= 0)
