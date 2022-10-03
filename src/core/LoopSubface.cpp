@@ -796,23 +796,24 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
     size_t target_index_count = static_cast<size_t>(index_count * threshold);
     if (level == -1)
-        target_index_count = result_index_count_ + 6;
+        target_index_count = (result_face_count_ + 2) * 3;
     else if (level == -2)
-        target_index_count = result_index_count_ - 6;
+        target_index_count = (result_face_count_ - 2) * 3;
     float target_error = 1.f;
 
     std::vector<uint32_t> result_indexes(index_count);
     // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
-    result_index_count_ = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
+    int result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
         &origin_positions_[0].x, position_count, sizeof(glm::vec3),
         target_index_count, target_error);
-    result_indexes.resize(result_index_count_);
+    result_face_count_ = result_index_count / 3;
+    result_indexes.resize(result_index_count);
 
     std::vector<glm::vec3> result_positions(position_count);
     size_t result_position_count = 0;
     // `result_index_count` may be 0 meaning all the triangles are decimated.
-    if (result_index_count_)
-        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count_,
+    if (result_index_count)
+        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
             &origin_positions_[0].x, position_count, sizeof(glm::vec3));
     result_positions.resize(result_position_count);
 
@@ -826,6 +827,167 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
         vertexes_base[i] = &vertexes[i];
     for (size_t i = 0; i < faces.size(); i++)
         faces_base[i] = &faces[i];
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
+
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
+}
+
+struct QueueEdge {
+    const Vertex* const v[2];
+    const float l;
+
+    QueueEdge(const Vertex* v0, const Vertex* v1)
+        : v { std::min(v0, v1), std::max(v0, v1) }
+        , l(glm::distance(v[0]->p, v[1]->p))
+    {
+    }
+
+    bool operator<(const QueueEdge& qe) const
+    {
+        const std::array<void*, 2>& a = *reinterpret_cast<const std::array<void*, 2>*>(v);
+        const std::array<void*, 2>& b = *reinterpret_cast<const std::array<void*, 2>*>(qe.v);
+        return l < qe.l || l == qe.l && a < b;
+    }
+};
+
+void CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::set<QueueEdge>& queue, size_t& decimate_face_count)
+{
+    const QueueEdge collapse_e = *queue.begin();
+    queue.erase(queue.begin());
+
+    Vertex* v0 = const_cast<Vertex*>(collapse_e.v[0]);
+    Vertex* v1 = const_cast<Vertex*>(collapse_e.v[1]);
+
+    std::vector<const Face*> sweep = v1->OneSweep();
+    std::vector<const Vertex*> ring = v1->OneRing();
+
+    std::vector<Face*> collapse_f;
+    std::vector<Vertex*> collapse_f_v;
+    for (const Face* f_const : sweep) {
+        Face* f = const_cast<Face*>(f_const);
+        int v1_id = f->VertexId(v1);
+        int v0_id = f->VertexId(v0);
+        f->v[v1_id] = v0;
+
+        if (v0_id != -1) {
+            collapse_f.push_back(f);
+            int v2_id = 3 - v0_id - v1_id;
+            Vertex* v2 = const_cast<Vertex*>(f->v[v2_id]);
+            collapse_f_v.push_back(v2);
+            Face* fn[2] { const_cast<Face*>(f->neighbors[v2_id]), const_cast<Face*>(f->neighbors[PREV(v2_id)]) };
+
+            for (int i = 0; i < 2; ++i)
+                if (fn[i] && fn[i] != fn[1 - i] && fn[i]->VertexId(v0) != -1 && fn[i]->VertexId(v1) != -1)
+                    for (int k = 0; k < 3; ++k)
+                        if (fn[i]->neighbors[k] != f) {
+                            for (int l = 0; fn[i]->neighbors[k] && l < 3; ++l)
+                                if (fn[i]->neighbors[k]->neighbors[l] == fn[i]->neighbors[k])
+                                    const_cast<Face*>(fn[i]->neighbors[k])->neighbors[l] = fn[1 - i];
+                            for (int l = 0; fn[1 - i] && l < 3; ++l)
+                                if (fn[1 - i]->neighbors[l] == f)
+                                    fn[1 - i]->neighbors[l] = fn[i]->neighbors[k];
+                            fn[i] = const_cast<Face*>(fn[i]->neighbors[k]);
+                            break;
+                        }
+
+            for (int i = 0; i < 2; ++i)
+                if (fn[i] && (fn[i]->VertexId(v0) == -1 || fn[i]->VertexId(v1) == -1))
+                    for (int j = 0; j < 3; ++j)
+                        if (fn[i]->neighbors[j] == f) {
+                            fn[i]->neighbors[j] = fn[1 - i];
+                        }
+
+            QueueEdge e(v1, v2);
+            auto e_it = queue.find(e);
+            if (e_it != queue.end())
+                queue.erase(e_it);
+
+            if (v2->start_face == f)
+                v2->start_face = fn[0] ? fn[0] : fn[1];
+
+            // `Face::children[k]` are initialized as `nullptr`. Use the first child to flag deletion.
+            f->children[0] = reinterpret_cast<Face*>(1);
+            decimate_face_count--;
+        }
+    }
+
+    for (auto v : ring) {
+        auto e_it = queue.find({ v, v1 });
+        if (e_it != queue.end()) {
+            queue.erase(e_it);
+            queue.insert({ v, v0 });
+        }
+    }
+
+    auto f_it = std::find(collapse_f.begin(), collapse_f.end(), v0->start_face);
+    if (f_it != collapse_f.end()) {
+        v0->start_face = nullptr;
+        for (int i = 0; i < collapse_f.size(); ++i)
+            if (collapse_f[i] && (v0->start_face == nullptr || v0->start_face->children[0])) {
+                v0->start_face = collapse_f[i]->PrevNeighbor(collapse_f_v[i]);
+                if (v0->start_face == nullptr || v0->start_face->children[0])
+                    v0->start_face = collapse_f[i]->NextNeighbor(collapse_f_v[i]);
+            }
+    }
+    if (v0->start_face && v0->start_face->children[0] == nullptr) {
+        v0->ComputeStartFaceAndBoundary();
+        v0->ComputeValence();
+    } else {
+        v0->child = reinterpret_cast<Vertex*>(1);
+    }
+
+    std::sort(collapse_f_v.begin(), collapse_f_v.end());
+    auto v_it_end = std::unique(collapse_f_v.begin(), collapse_f_v.end());
+    for (auto v_it = collapse_f_v.begin(); v_it != v_it_end; ++v_it)
+        if ((*v_it)->start_face && (*v_it)->start_face->children[0] == nullptr)
+            (*v_it)->ComputeValence();
+        else
+            (*v_it)->child = reinterpret_cast<Vertex*>(1);
+
+    // `Vertex::child` is initialized as `nullptr`. Use it to flag deletion.
+    v1->child = reinterpret_cast<Vertex*>(1);
+}
+
+void LoopSubface::Decimate(int level)
+{
+    std::string func_name = fmt::format("LoopSubface::Decimate(level={})", level);
+    Timer timer(func_name);
+
+    if (level >= 0)
+        level_ = level;
+
+    std::vector<Vertex> vertexes;
+    std::vector<Face> faces;
+    BuildTopology(origin_positions_, origin_indexes_, vertexes, faces);
+    size_t vertex_count = vertexes_.size();
+    size_t face_count = faces_.size();
+
+    float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
+    size_t target_face_count = static_cast<size_t>(faces_.size() * threshold);
+    if (level == -1)
+        target_face_count = result_face_count_ + 2;
+    else if (level == -2)
+        target_face_count = result_face_count_ - 2;
+
+    std::set<QueueEdge> queue;
+    for (auto& f : faces)
+        for (int vi = 0; vi < 3; ++vi)
+            queue.insert({ f.v[vi], f.v[NEXT(vi)] });
+
+    size_t decimate_face_count = face_count;
+    while (decimate_face_count > target_face_count)
+        CollapseEdge(vertexes, faces, queue, decimate_face_count);
+    result_face_count_ = target_face_count;
+
+    std::vector<Vertex*> vertexes_base;
+    std::vector<Face*> faces_base;
+    for (size_t i = 0; i < faces.size(); i++)
+        if (faces[i].children[0] == nullptr)
+            faces_base.push_back(&faces[i]);
+    if (!faces_base.empty())
+        for (size_t i = 0; i < vertexes.size(); i++)
+            if (vertexes[i].child == nullptr)
+                vertexes_base.push_back(&vertexes[i]);
     ComputeNormalsAndPositions(vertexes_base, faces_base);
 
     spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());

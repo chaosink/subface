@@ -8,7 +8,7 @@ namespace subface {
 
 class LoopSubface {
     int level_ = 0;
-    int result_index_count_ = 0;
+    int result_face_count_ = 0;
 
     std::vector<glm::vec3> origin_positions_;
     std::vector<uint32_t> origin_indexes_;
@@ -58,6 +58,7 @@ public:
     // else:
     //     Sacrifice mesh appearance for simplification performance.
     void MeshoptDecimate(int level, bool sloppy);
+    void Decimate(int level);
 
     const std::vector<glm::vec3>& vertex() const
     {

@@ -22,6 +22,7 @@ enum EProcessingMethod {
     PM_Tessellate3,
     PM_MeshoptDecimate,
     PM_MeshoptDecimateSloppy,
+    PM_Decimate,
     PM_Count,
 };
 struct ProcessingMethod {
@@ -61,6 +62,10 @@ std::vector<ProcessingMethod> processing_methods = {
         [](LoopSubface& ls, int level) {
             ls.MeshoptDecimate(level, true);
         } }, // Key 8
+    { "Decimate",
+        [](LoopSubface& ls, int level) {
+            ls.Decimate(level);
+        } }, // Key 9
 };
 
 enum ERenderMode {
@@ -204,7 +209,7 @@ int main(int argc, char* argv[])
             method_old = method;
             process(method, level);
         }
-        if (PM_MeshoptDecimate <= method && method <= PM_MeshoptDecimateSloppy) { // Decimation methods.
+        if (PM_MeshoptDecimate <= method && method <= PM_Decimate) { // Decimation methods.
             decimate_one_less_face.Update(
                 [&]() {
                     process(method, -1); // `level == -1` means "decimate one less face".

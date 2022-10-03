@@ -34,6 +34,7 @@ struct Vertex {
     void ComputeValence();
     void ComputeRegular();
     std::vector<const Vertex*> OneRing() const;
+    std::vector<const Face*> OneSweep() const;
     std::vector<const Vertex*> BoundaryNeighbors() const;
     const Face* TraverseFaces(const std::function<void(const Face*)>& func) const;
 };

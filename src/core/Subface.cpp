@@ -103,6 +103,15 @@ std::vector<const Vertex*> Vertex::OneRing() const
     return ring;
 }
 
+std::vector<const Face*> Vertex::OneSweep() const
+{
+    std::vector<const Face*> sweep;
+    TraverseFaces([&](const Face* f) {
+        sweep.push_back(f);
+    });
+    return sweep;
+}
+
 std::vector<const Vertex*> Vertex::BoundaryNeighbors() const
 {
     assert(boundary == true);
