@@ -1,14 +1,10 @@
 #include <iostream>
-using namespace std;
 
 #include <argparse/argparse.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <spdlog/fmt/fmt.h>
 
-#include "OGL.hpp"
-
-#include "Camera.hpp"
 #include "Model.hpp"
+#include "OGL.hpp"
 
 #include "LoopSubface.hpp"
 using namespace subface;
@@ -73,18 +69,6 @@ std::vector<ProcessingMethod> processing_methods = {
         } }, // Key 0
 };
 
-enum ERenderMode {
-    RM_FacesWireframe,
-    RM_FacesOnly,
-    RM_WireframeOnly,
-    RM_Count,
-};
-std::vector<std::string> render_mode_names {
-    "FacesWireframe",
-    "FacesOnly",
-    "WireframeOnly",
-};
-
 int main(int argc, char* argv[])
 {
     argparse::ArgumentParser program("subface", "v0.1.0");
@@ -109,19 +93,19 @@ int main(int argc, char* argv[])
         .help("save PNG in command line mode")
         .default_value(false)
         .implicit_value(true);
-    program.add_argument("--fix_camera", "-f")
-        .help("fix camera")
-        .default_value(false)
-        .implicit_value(true);
     program.add_argument("--smooth")
         .help("use smooth normal")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--fix_camera", "-f")
+        .help("fix camera")
         .default_value(false)
         .implicit_value(true);
     program.add_argument("--cull")
         .help("enable face culling")
         .default_value(false)
         .implicit_value(true);
-    program.add_argument("--transparent")
+    program.add_argument("--transparent", "-t")
         .help("enable transparent window")
         .default_value(false)
         .implicit_value(true);
@@ -152,11 +136,11 @@ int main(int argc, char* argv[])
     bool cmd_mode = program.get<bool>("--cmd");
     bool cmd_export_obj = program.get<bool>("--export_obj");
     bool cmd_save_png = program.get<bool>("--save_png");
-    bool arg_fix_camera = program.get<bool>("--fix_camera");
     bool arg_smooth_normal = program.get<bool>("--smooth");
-    bool arg_cull_face = program.get<bool>("--cull");
-    bool arg_transparent_window = program.get<bool>("--transparent");
-    ERenderMode render_mode = static_cast<ERenderMode>(program.get<int>("--render") % RM_Count);
+    bool fix_camera = program.get<bool>("--fix_camera");
+    bool cull_face = program.get<bool>("--cull");
+    bool transparent_window = program.get<bool>("--transparent");
+    OGL::ERenderMode render_mode = static_cast<OGL::ERenderMode>(program.get<int>("--render") % OGL::RM_Count);
     EProcessingMethod method = static_cast<EProcessingMethod>((program.get<int>("--method") - 1 + PM_Count) % PM_Count);
     int level = program.get<int>("--level") % 10;
 
@@ -166,13 +150,12 @@ int main(int argc, char* argv[])
     OGL ogl;
     ogl.InitGLFW("Subface", window_w, window_h, cmd_mode);
     ogl.InitGL("shader/vertex.glsl", "shader/fragment.glsl");
-    ogl.EnableCullFace(arg_cull_face);
-    ogl.EnableTransparentWindow(arg_transparent_window);
+    ogl.EnableCullFace(cull_face);
+    ogl.EnableTransparentWindow(transparent_window);
+    ogl.RenderMode(render_mode);
+    ogl.FixCamera(fix_camera);
 
-    Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
     Toggle use_smooth_normal(ogl.window(), GLFW_KEY_N, arg_smooth_normal);
-    Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, arg_cull_face);
-    Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, arg_transparent_window);
     Toggle decimate_one_less_face(ogl.window(), GLFW_KEY_COMMA, false);
     Toggle decimate_one_more_face(ogl.window(), GLFW_KEY_PERIOD, false);
     Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
@@ -196,41 +179,14 @@ int main(int argc, char* argv[])
     };
     process(method, level);
 
-    double time = ogl.time();
-    Camera camera(ogl.window(), window_w, window_h, time);
-    camera.Fix(arg_fix_camera);
-
     EProcessingMethod method_old = method;
     int level_old = level;
     while (ogl.Alive()) {
-        time = ogl.time();
-        ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        camera.Update(time);
-        ogl.MV(camera.mv());
-        ogl.MVP(camera.mvp());
-
         // clang-format off
-        switch_render_mode.Update([&]() {
-            render_mode = static_cast<ERenderMode>((render_mode + 1) % RM_Count);
-        });
-
         use_smooth_normal.Update([&]() {
             ogl.Normal(ls.normal_smooth());
         }, [&]() {
             ogl.Normal(ls.normal_flat());
-        });
-
-        enable_cull_face.Update([&]() {
-            ogl.EnableCullFace(true);
-        }, [&]() {
-            ogl.EnableCullFace(false);
-        });
-
-        enable_transparent_window.Update([&]() {
-            ogl.EnableTransparentWindow(true);
-        }, [&]() {
-            ogl.EnableTransparentWindow(false);
         });
 
         auto get_file_name = [&]() {
@@ -257,8 +213,9 @@ int main(int argc, char* argv[])
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
                     if (GLFW_KEY_0 <= key && key <= GLFW_KEY_0 + PM_Count)
                         method = static_cast<EProcessingMethod>((key - GLFW_KEY_1 + PM_Count) % PM_Count);
-                } else
+                } else {
                     level = key - GLFW_KEY_0;
+                }
 
         if (level != level_old || method != method_old) {
             level_old = level;
@@ -282,26 +239,9 @@ int main(int argc, char* argv[])
             }
         }
 
-        if (render_mode == RM_FacesWireframe) {
-            ogl.Uniform("wireframe", 0);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            ogl.Draw();
-            ogl.Uniform("wireframe", 1);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            ogl.Draw();
-        } else if (render_mode == RM_FacesOnly) {
-            ogl.Uniform("wireframe", 0);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            ogl.Draw();
-        } else if (render_mode == RM_WireframeOnly) {
-            ogl.Uniform("wireframe", 0);
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            ogl.Draw();
-        }
-
-        std::string title = fmt::format("{}(level={}) | {} | Cull {}",
-            processing_methods[method].name, level, render_mode_names[render_mode], enable_cull_face.state());
-        ogl.Update(title);
+        std::string program_info = fmt::format("{}(level={})",
+            processing_methods[method].name, level);
+        ogl.Update(program_info);
 
         if (cmd_mode) {
             if (cmd_export_obj)

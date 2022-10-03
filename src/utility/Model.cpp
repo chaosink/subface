@@ -1,8 +1,8 @@
 #include "Model.hpp"
 
-#include "glm/gtc/matrix_transform.hpp"
+#include <glm/gtc/matrix_transform.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include <tiny_obj_loader.h>
 
 Model::Model(GLFWwindow* window, const std::string& file_name)
     : window_(window)

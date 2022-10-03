@@ -5,11 +5,10 @@
 #include <map>
 #include <set>
 
+#include <meshoptimizer/meshoptimizer.h>
 #include <spdlog/spdlog.h>
 
 #include "Timer.hpp"
-
-#include "meshoptimizer/meshoptimizer.h"
 
 namespace subface {
 

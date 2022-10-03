@@ -16,7 +16,7 @@ Timer::~Timer()
 void Timer::Reset()
 {
     start_ = end_ = std::chrono::steady_clock::now();
-    duration_ = { 0 };
+    duration_ = duration_.zero();
     state_ = Timing;
 }
 

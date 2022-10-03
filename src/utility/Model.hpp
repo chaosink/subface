@@ -3,8 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "GLFW/glfw3.h"
-#include "glm/glm.hpp"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 class Model {
     GLFWwindow* window_;
@@ -22,30 +23,31 @@ class Model {
 
 public:
     Model(GLFWwindow* window, const std::string& file_name);
+    glm::mat4 Update(double time);
+
     ~Model() { }
-    size_t n_vertex()
+    size_t n_vertex() const
     {
         return vertex_.size();
     }
-    std::vector<glm::vec3>& vertex()
+    const std::vector<glm::vec3>& vertex() const
     {
         return vertex_;
     }
-    std::vector<glm::vec3>& normal()
+    const std::vector<glm::vec3>& normal() const
     {
         return normal_;
     }
-    std::vector<glm::vec2>& uv()
+    const std::vector<glm::vec2>& uv() const
     {
         return uv_;
     }
-    std::vector<glm::vec3>& indexed_vertex()
+    const std::vector<glm::vec3>& indexed_vertex() const
     {
         return indexed_vertex_;
     }
-    std::vector<uint32_t>& index()
+    const std::vector<uint32_t>& index() const
     {
         return index_;
     }
-    glm::mat4 Update(double time);
 };

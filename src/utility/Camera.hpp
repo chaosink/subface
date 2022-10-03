@@ -1,10 +1,9 @@
 #pragma once
-
-#include "Toggle.hpp"
-
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "Toggle.hpp"
 
 void PrintMat(const glm::mat4& m, const char* indent = "", const char* name = NULL);
 void PrintVec(const glm::vec3& v, const char* indent = "", const char* name = NULL);
@@ -48,11 +47,11 @@ public:
     Camera(GLFWwindow* window, int window_w, int window_h, double time);
     void Update(double time);
 
-    const glm::mat4& mv()
+    const glm::mat4& mv() const
     {
         return mv_;
     }
-    const glm::mat4& mvp()
+    const glm::mat4& mvp() const
     {
         return mvp_;
     }

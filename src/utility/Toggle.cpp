@@ -1,7 +1,11 @@
 #include "Toggle.hpp"
 
-bool Toggle::Update(const std::function<void()> &Off2On, const std::function<void()> &On2Off)
+#include <cassert>
+
+bool Toggle::Update(const std::function<void()>& Off2On, const std::function<void()>& On2Off)
 {
+    assert(window_);
+
     if (count_-- > 0)
         return state_;
     if (glfwGetKey(window_, key_) == GLFW_PRESS) {
@@ -25,8 +29,10 @@ bool Toggle::Update(const std::function<void()> &Off2On, const std::function<voi
     return state_;
 }
 
-bool Toggle::Update(const std::function<void()> &F)
+bool Toggle::Update(const std::function<void()>& F)
 {
+    assert(window_);
+
     if (count_-- > 0)
         return state_;
     if (glfwGetKey(window_, key_) == GLFW_PRESS) {
@@ -47,6 +53,8 @@ bool Toggle::Update(const std::function<void()> &F)
 
 bool Toggle::Update()
 {
+    assert(window_);
+
     if (count_-- > 0)
         return state_;
     if (glfwGetKey(window_, key_) == GLFW_PRESS) {

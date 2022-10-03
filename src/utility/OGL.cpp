@@ -8,12 +8,19 @@
 
 #include "Timer.hpp"
 
+std::vector<std::string> OGL::render_mode_names_ {
+    "FacesWireframe",
+    "FacesOnly",
+    "WireframeOnly",
+};
+
 OGL::~OGL()
 {
     glDeleteBuffers(1, &vertex_buffer_);
     glDeleteBuffers(1, &normal_buffer_);
     glDeleteVertexArrays(1, &vertex_array_);
     glDeleteProgram(shader_);
+
     glfwDestroyWindow(window_);
     glfwTerminate();
 }
@@ -51,8 +58,14 @@ GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h, 
     }
 
     fps_.Init(time());
+    camera_ = std::make_unique<Camera>(window_, window_w_, window_h_, time());
 
     // glfwSwapInterval(1);
+
+    enable_cull_face_ = Toggle(window_, GLFW_KEY_C, false);
+    enable_transparent_window_ = Toggle(window_, GLFW_KEY_T, false);
+    switch_render_mode_ = Toggle(window_, GLFW_KEY_TAB, false);
+
     return window_;
 }
 
@@ -233,51 +246,87 @@ void OGL::Normal(const std::vector<glm::vec3>& normal)
     );
 }
 
-void OGL::MVP(const glm::mat4& mvp)
+void OGL::MVP(const glm::mat4& mvp) const
 {
     glUniformMatrix4fv(mvp_, 1, GL_FALSE, &mvp[0][0]);
 }
 
-void OGL::MV(const glm::mat4& mv)
+void OGL::MV(const glm::mat4& mv) const
 {
     glUniformMatrix4fv(mv_, 1, GL_FALSE, &mv[0][0]);
 }
 
-void OGL::Uniform(const std::string& name, int value)
+void OGL::Uniform(const std::string& name, int value) const
 {
     GLuint location = glGetUniformLocation(shader_, name.c_str());
     glUniform1i(location, value);
 }
 
-bool OGL::Alive()
+bool OGL::Alive() const
 {
     return glfwGetKey(window_, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window_);
 }
 
-void OGL::Clear(GLenum bit)
+void OGL::Clear() const
 {
-    glClear(bit);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OGL::Draw()
+void OGL::Draw() const
 {
     glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(n_vertex_));
 }
 
-#include <spdlog/fmt/fmt.h>
-void OGL::Update(const std::string& info)
+void OGL::Update(const std::string& program_info)
 {
+    camera_->Update(time());
+    MV(camera_->mv());
+    MVP(camera_->mvp());
+
+    enable_transparent_window_.Update();
+    if (enable_transparent_window_.state())
+        glClearColor(0.f, 0.f, 0.f, 0.f);
+    else
+        glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+
+    Clear();
+
+    enable_cull_face_.Update();
+    enable_cull_face_.state() ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+
+    switch_render_mode_.Update([&]() {
+        render_mode_ = static_cast<ERenderMode>((render_mode_ + 1) % RM_Count);
+    });
+    if (render_mode_ == RM_FacesWireframe) {
+        Uniform("wireframe", 0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        Draw();
+        Uniform("wireframe", 1);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        Draw();
+    } else if (render_mode_ == RM_FacesOnly) {
+        Uniform("wireframe", 0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        Draw();
+    } else if (render_mode_ == RM_WireframeOnly) {
+        Uniform("wireframe", 0);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        Draw();
+    }
+
     glfwSwapBuffers(window_);
-    glfwPollEvents();
 
     fps_.Update(time());
-    std::string title = fmt::format("{} | {:.2f} FPS | {}", window_title_, fps_.fps(), info);
+    std::string title = fmt::format("{} | {:.2f} FPS | {} | {} | Cull {}",
+        window_title_, fps_.fps(), program_info, render_mode_names_[render_mode_], enable_cull_face_.state());
     glfwSetWindowTitle(window_, title.c_str());
+
+    glfwPollEvents();
 }
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-void OGL::SavePng(const std::string &file_name)
+void OGL::SavePng(const std::string& file_name) const
 {
     std::string func_name = fmt::format("OGL::SavePng(file_name={})", file_name);
     Timer timer(func_name);

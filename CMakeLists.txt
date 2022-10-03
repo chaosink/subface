@@ -25,29 +25,39 @@ include_directories(
 	${OPENGL_INCLUDE_DIR}
 )
 
+add_library(meshoptimizer
+	src/thirdparty/meshoptimizer/simplifier.cpp
+	src/thirdparty/meshoptimizer/vfetchoptimizer.cpp
+)
+
 add_library(core
 	src/core/Subface.cpp
 	src/core/LoopSubface.cpp
 )
 target_link_libraries(core
 	spdlog::spdlog
+	meshoptimizer
 )
 
-add_executable(subface
-	src/subface/subface.cpp
+add_library(utility
 	src/utility/Camera.cpp
 	src/utility/FPS.cpp
 	src/utility/Model.cpp
 	src/utility/OGL.cpp
 	src/utility/Timer.cpp
 	src/utility/Toggle.cpp
-	src/thirdparty/meshoptimizer/simplifier.cpp
-	src/thirdparty/meshoptimizer/vfetchoptimizer.cpp
+)
+target_link_libraries(utility
+	glew_s
+	glfw
+)
+
+add_executable(subface
+	src/subface/subface.cpp
 )
 target_link_libraries(subface
 	core
-	glew_s
-	glfw
+	utility
 )
 
 if(MSVC)

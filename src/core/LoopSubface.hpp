@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Subface.hpp"
-
 #include <string>
+
+#include "Subface.hpp"
 
 namespace subface {
 

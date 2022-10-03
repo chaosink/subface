@@ -6,6 +6,8 @@ class FPS {
     float fps_ = 0;
 
 public:
+    float Update(double time);
+
     FPS() { }
     FPS(double time)
     {
@@ -15,9 +17,7 @@ public:
     {
         time_ = time;
     }
-    float Update(double time);
-    void Term();
-    float fps()
+    float fps() const
     {
         return fps_;
     }
