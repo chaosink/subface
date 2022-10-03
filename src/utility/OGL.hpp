@@ -46,4 +46,15 @@ public:
     {
         return window_;
     }
+    void EnableCullFace(bool cull)
+    {
+        cull ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
+    }
+    void EnableTransparentWindow(bool transparent)
+    {
+        if (transparent)
+            glClearColor(0.f, 0.f, 0.f, 0.f);
+        else
+            glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+    }
 };

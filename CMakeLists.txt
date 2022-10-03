@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 project(subface LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 if(MSVC)
 	add_definitions(-DCONSTEXPR=const -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 else()
@@ -21,6 +21,7 @@ include_directories(
 	src/thirdparty/glfw/include
 	src/thirdparty/glm
 	src/thirdparty/spdlog/include
+	src/thirdparty/argparse/include
 	${OPENGL_INCLUDE_DIR}
 )
 

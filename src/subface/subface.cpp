@@ -1,9 +1,9 @@
 #include <iostream>
 using namespace std;
 
-#include <spdlog/fmt/fmt.h>
-
+#include <argparse/argparse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <spdlog/fmt/fmt.h>
 
 #include "OGL.hpp"
 
@@ -87,22 +87,78 @@ std::vector<std::string> render_mode_names {
 
 int main(int argc, char* argv[])
 {
-    bool cmd_mode = false;
-    EProcessingMethod cmd_method = PM_SubdivideSmooth;
-    int cmd_level = 0;
-    if (argc < 2) {
-        std::cout << "Usage: subface model_file [processing_method_id level]" << std::endl;
-        std::cout << "Cmd mode with OBJ export and PNG save is used if processing_method_id and level is specified." << std::endl;
-        std::cout << "All processing methods:" << std::endl;
-        for (int i = 0; i < PM_Count; ++i)
-            std::cout << fmt::format("    {}.{}", i + 1, processing_methods[i].name) << std::endl;
-        return 0;
-    } else if (argc == 4) {
-        cmd_mode = true;
-        cmd_method = static_cast<EProcessingMethod>(atoi(argv[2]) - 1);
-        cmd_level = atoi(argv[3]);
+    argparse::ArgumentParser program("subface", "v0.1.0");
+    // Program description.
+    std::string description = "Process geometries with one of the following methods:\n";
+    for (int i = 0; i < PM_Count; ++i)
+        description += fmt::format("    {}.{}\n", i + 1, processing_methods[i].name);
+    program.add_description(description);
+    // Positional arguments.
+    program.add_argument("OBJ_file_path")
+        .help("OBJ file path");
+    // Optional arguments giving flags.
+    program.add_argument("--cmd", "-c")
+        .help("run in command line mode")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--export_obj", "-e")
+        .help("export OBJ in command line mode")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--save_png", "-s")
+        .help("save PNG in command line mode")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--fix_camera", "-f")
+        .help("fix camera")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--smooth")
+        .help("use smooth normal")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--cull")
+        .help("enable face culling")
+        .default_value(false)
+        .implicit_value(true);
+    program.add_argument("--transparent")
+        .help("enable transparent window")
+        .default_value(false)
+        .implicit_value(true);
+    // Optional arguments giving values.
+    program.add_argument("--render", "-r")
+        .help("render mode ID")
+        .default_value(0)
+        .scan<'i', int>();
+    program.add_argument("--method", "-m")
+        .help("processing method ID")
+        .default_value(1)
+        .scan<'i', int>();
+    program.add_argument("--level", "-l")
+        .help("processing level")
+        .default_value(0)
+        .scan<'i', int>();
+    // Parse arguments.
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::exception& err) {
+        std::cerr << err.what() << std::endl
+                  << std::endl;
+        std::cerr << program;
+        std::exit(1);
     }
-    const std::string file_path = argv[1];
+    // Get parsed arguments.
+    const std::string file_path = program.get<std::string>("OBJ_file_path");
+    bool cmd_mode = program.get<bool>("--cmd");
+    bool cmd_export_obj = program.get<bool>("--export_obj");
+    bool cmd_save_png = program.get<bool>("--save_png");
+    bool arg_fix_camera = program.get<bool>("--fix_camera");
+    bool arg_smooth_normal = program.get<bool>("--smooth");
+    bool arg_cull_face = program.get<bool>("--cull");
+    bool arg_transparent_window = program.get<bool>("--transparent");
+    ERenderMode render_mode = static_cast<ERenderMode>(program.get<int>("--render") % RM_Count);
+    EProcessingMethod method = static_cast<EProcessingMethod>((program.get<int>("--method") - 1 + PM_Count) % PM_Count);
+    int level = program.get<int>("--level") % 10;
 
     int window_w = 1280;
     int window_h = 720;
@@ -110,28 +166,27 @@ int main(int argc, char* argv[])
     OGL ogl;
     ogl.InitGLFW("Subface", window_w, window_h, cmd_mode);
     ogl.InitGL("shader/vertex.glsl", "shader/fragment.glsl");
+    ogl.EnableCullFace(arg_cull_face);
+    ogl.EnableTransparentWindow(arg_transparent_window);
+
+    Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
+    Toggle use_smooth_normal(ogl.window(), GLFW_KEY_N, arg_smooth_normal);
+    Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, arg_cull_face);
+    Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, arg_transparent_window);
+    Toggle decimate_one_less_face(ogl.window(), GLFW_KEY_COMMA, false);
+    Toggle decimate_one_more_face(ogl.window(), GLFW_KEY_PERIOD, false);
+    Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
+    Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
 
     Model model(ogl.window(), file_path);
 
     LoopSubface ls;
     ls.BuildTopology(model.indexed_vertex(), model.index());
 
-    Toggle switch_render_mode(ogl.window(), GLFW_KEY_TAB, false);
-    ERenderMode render_mode = RM_FacesWireframe;
-    Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
-    Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
-    Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
-    Toggle decimate_one_less_face(ogl.window(), GLFW_KEY_COMMA, false);
-    Toggle decimate_one_more_face(ogl.window(), GLFW_KEY_PERIOD, false);
-    Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
-    Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
-    EProcessingMethod method = PM_SubdivideSmooth, method_old = PM_SubdivideSmooth;
-    int level = 0, level_old = 0;
-
     auto process = [&](int method, int level) {
         processing_methods[method].process(ls, level);
         ogl.Vertex(ls.vertex());
-        if (enable_smooth_normal.state())
+        if (use_smooth_normal.state())
             ogl.Normal(ls.normal_smooth());
         else
             ogl.Normal(ls.normal_flat());
@@ -143,14 +198,10 @@ int main(int argc, char* argv[])
 
     double time = ogl.time();
     Camera camera(ogl.window(), window_w, window_h, time);
+    camera.Fix(arg_fix_camera);
 
-    if (cmd_mode) {
-        method = cmd_method;
-        level = cmd_level;
-        // enable_smooth_normal.state(true);
-        camera.Fix(true);
-    }
-
+    EProcessingMethod method_old = method;
+    int level_old = level;
     while (ogl.Alive()) {
         time = ogl.time();
         ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -164,34 +215,34 @@ int main(int argc, char* argv[])
             render_mode = static_cast<ERenderMode>((render_mode + 1) % RM_Count);
         });
 
-        enable_smooth_normal.Update([&]() {
+        use_smooth_normal.Update([&]() {
             ogl.Normal(ls.normal_smooth());
         }, [&]() {
             ogl.Normal(ls.normal_flat());
         });
 
         enable_cull_face.Update([&]() {
-            glEnable(GL_CULL_FACE);
+            ogl.EnableCullFace(true);
         }, [&]() {
-            glDisable(GL_CULL_FACE);
+            ogl.EnableCullFace(false);
         });
 
         enable_transparent_window.Update([&]() {
-            glClearColor(0.f, 0.f, 0.f, 0.f);
+            ogl.EnableTransparentWindow(true);
         }, [&]() {
-            glClearColor(0.08f, 0.16f, 0.24f, 1.f);
+            ogl.EnableTransparentWindow(false);
         });
 
         auto get_file_name = [&]() {
             return fmt::format("{}.{}.{}",
                 file_path.substr(0, file_path.find_last_of('.')),
                 level == 0 ? "origin" : processing_methods[method].name + ".level_" + char('0' + level),
-                enable_smooth_normal.state() ? "smooth" : "flat"
+                use_smooth_normal.state() ? "smooth" : "flat"
             );
         };
 
         auto export_obj_func = [&]() {
-            ls.ExportObj(get_file_name() + ".obj", enable_smooth_normal.state());
+            ls.ExportObj(get_file_name() + ".obj", use_smooth_normal.state());
         };
         export_obj.Update(export_obj_func);
 
@@ -253,8 +304,10 @@ int main(int argc, char* argv[])
         ogl.Update(title);
 
         if (cmd_mode) {
-            // export_obj_func();
-            save_png_func();
+            if (cmd_export_obj)
+                export_obj_func();
+            if (cmd_save_png)
+                save_png_func();
             break;
         }
     }
