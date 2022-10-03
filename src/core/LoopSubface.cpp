@@ -790,6 +790,9 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     size_t index_count = origin_indexes_.size();
     size_t position_count = origin_positions_.size();
     float threshold = (1 <= level && level <= 9) ? (1.f - level * 0.1f) : 1.f;
+    /* Hardcoded threshold table. */
+    // float threshold_table[] { 1.f, 0.5f, 0.25f, 0.125f, 0.0625f, 0.03125f };
+    // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
     size_t target_index_count = static_cast<size_t>(index_count * threshold);
     float target_error = 1.f;
 
