@@ -675,10 +675,10 @@ void LoopSubface::Tessellate4_1(int level)
                 f[1] = std::max(f0, f1);
             }
 
-            bool operator<(const Edge& e2) const
+            bool operator<(const Edge& e) const
             {
                 const std::array<void*, 4>& a = *reinterpret_cast<const std::array<void*, 4>*>(this);
-                const std::array<void*, 4>& b = *reinterpret_cast<const std::array<void*, 4>*>(&e2);
+                const std::array<void*, 4>& b = *reinterpret_cast<const std::array<void*, 4>*>(&e);
                 return a < b;
             }
         };
