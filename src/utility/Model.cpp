@@ -28,15 +28,16 @@ Model::Model(GLFWwindow* window, const std::string& file_name)
             size_t fv = shapes[s].mesh.num_face_vertices[f];
             for (size_t v = 0; v < fv; v++) {
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-                vertex_[i].x = attrib.vertices[3 * idx.vertex_index + 0];
-                vertex_[i].y = attrib.vertices[3 * idx.vertex_index + 1];
-                vertex_[i].z = attrib.vertices[3 * idx.vertex_index + 2];
-                normal_[i].x = attrib.normals[3 * idx.normal_index + 0];
-                normal_[i].y = attrib.normals[3 * idx.normal_index + 1];
-                normal_[i].z = attrib.normals[3 * idx.normal_index + 2];
+                size_t vi = idx.vertex_index, ni = idx.normal_index, ti = idx.texcoord_index;
+                vertex_[i].x = attrib.vertices[3 * vi + 0];
+                vertex_[i].y = attrib.vertices[3 * vi + 1];
+                vertex_[i].z = attrib.vertices[3 * vi + 2];
+                normal_[i].x = attrib.normals[3 * ni + 0];
+                normal_[i].y = attrib.normals[3 * ni + 1];
+                normal_[i].z = attrib.normals[3 * ni + 2];
                 if (attrib.texcoords.size()) {
-                    uv_[i].x = attrib.texcoords[2 * idx.texcoord_index + 0];
-                    uv_[i].y = attrib.texcoords[2 * idx.texcoord_index + 1];
+                    uv_[i].x = attrib.texcoords[2 * ti + 0];
+                    uv_[i].y = attrib.texcoords[2 * ti + 1];
                 }
                 // Optional: vertex colors
                 // tinyobj::real_t red = attrib.colors[3*idx.vertex_index+0];

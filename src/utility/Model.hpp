@@ -9,8 +9,8 @@
 
 class Model {
     GLFWwindow* window_;
-    glm::mat4 m_;
-    double time_;
+    glm::mat4 m_ { 1.f };
+    double time_ = 0.0;
     float turn_speed_ = 0.5f;
 
     int n_vertex_ = 0;
