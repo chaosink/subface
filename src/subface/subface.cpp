@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         .help("save PNG in command line mode")
         .default_value(false)
         .implicit_value(true);
-    program.add_argument("--smooth")
+    program.add_argument("--smooth", "-n")
         .help("use smooth normal")
         .default_value(false)
         .implicit_value(true);
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
         .help("fix camera")
         .default_value(false)
         .implicit_value(true);
-    program.add_argument("--cull")
+    program.add_argument("--cull", "-u")
         .help("enable face culling")
         .default_value(false)
         .implicit_value(true);
