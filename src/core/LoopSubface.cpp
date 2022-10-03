@@ -870,7 +870,6 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
     size_t target_face_count, bool round_down, bool midpoint)
 {
     const QueueEdge collapse_e = *queue.begin();
-    queue.erase(queue.begin());
 
     Vertex* v0 = const_cast<Vertex*>(collapse_e.v[0]);
     Vertex* v1 = const_cast<Vertex*>(collapse_e.v[1]);
@@ -884,6 +883,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
         if (decimate_face_count - face_count_to_decimate_for_this_collapse < target_face_count)
             return false;
     }
+    queue.erase(queue.begin());
 
     std::vector<const Vertex*> ring[2] { v0->OneRing(), v1->OneRing() };
 
