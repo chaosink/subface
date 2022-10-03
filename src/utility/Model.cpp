@@ -2,11 +2,17 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
+#include <spdlog/spdlog.h>
 #include <tiny_obj_loader.h>
+
+#include "Timer.hpp"
 
 Model::Model(GLFWwindow* window, const std::string& file_name)
     : window_(window)
 {
+    std::string func_name = fmt::format("Model::Model()");
+    Timer timer(func_name);
+
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -59,7 +65,7 @@ Model::Model(GLFWwindow* window, const std::string& file_name)
             attrib.vertices[i * 3 + 2]);
     }
 
-    printf("Model loaded. Number of faces: %d. Number of vertices: %d\n", n_vertex_ / 3, n_vertex_);
+    spdlog::info("{}: Model {} loaded. {} triangls, {} vertices.", func_name, file_name, n_vertex_ / 3, indexed_vertex_.size());
 }
 
 glm::mat4 Model::Update(double time)

@@ -27,6 +27,9 @@ OGL::~OGL()
 
 GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h, bool cmd_mode)
 {
+    std::string func_name = fmt::format("OGL::InitGLFW()");
+    Timer timer(func_name);
+
     window_title_ = window_title;
     window_w_ = window_w;
     window_h_ = window_h;
@@ -53,7 +56,7 @@ GLFWwindow* OGL::InitGLFW(std::string window_title, int window_w, int window_h, 
     glewExperimental = true; // Needed for core profile
     if (glewInit() != GLEW_OK) {
         glfwTerminate();
-        fprintf(stderr, "Failed to initialize GLEW\n");
+        spdlog::error("{}: Failed to initialize GLEW", func_name);
         exit(EXIT_FAILURE);
     }
 
@@ -87,6 +90,9 @@ void OGL::InitGL(const char* vertex_file_path, const char* fragment_file_path, c
 
 GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment_string, const char* geometry_string)
 {
+    std::string func_name = fmt::format("OGL::LoadShaderFromString()");
+    Timer timer(func_name);
+
     // Create the shaders
     GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -96,7 +102,7 @@ GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment
     int InfoLogLength;
 
     // Compile Vertex Shader
-    printf("Compiling shader: %s\n", "vertex");
+    spdlog::info("{}: Compiling shader: vertex", func_name);
     char const* VertexSourcePointer = vertex_string;
     glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
     glCompileShader(VertexShaderID);
@@ -106,11 +112,11 @@ GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment
     if (InfoLogLength > 0) {
         std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-        printf("%s\n", &VertexShaderErrorMessage[0]);
+        spdlog::error("{}: {}", func_name, &VertexShaderErrorMessage[0]);
     }
 
     // Compile Fragment Shader
-    printf("Compiling shader: %s\n", "fragment");
+    spdlog::info("{}: Compiling shader: fragment", func_name);
     char const* FragmentSourcePointer = fragment_string;
     glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
     glCompileShader(FragmentShaderID);
@@ -120,12 +126,12 @@ GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment
     if (InfoLogLength > 0) {
         std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-        printf("%s\n", &FragmentShaderErrorMessage[0]);
+        spdlog::error("{}: {}", func_name, &FragmentShaderErrorMessage[0]);
     }
 
     if (geometry_string) {
         // Compile Geometry Shader
-        printf("Compiling shader: %s\n", "geometry");
+        spdlog::info("{}: Compiling shader: geometry", func_name);
         char const* GeometrySourcePointer = geometry_string;
         glShaderSource(GeometryShaderID, 1, &GeometrySourcePointer, NULL);
         glCompileShader(GeometryShaderID);
@@ -135,12 +141,12 @@ GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment
         if (InfoLogLength > 0) {
             std::vector<char> GeometryShaderErrorMessage(InfoLogLength + 1);
             glGetShaderInfoLog(GeometryShaderID, InfoLogLength, NULL, &GeometryShaderErrorMessage[0]);
-            printf("%s\n", &GeometryShaderErrorMessage[0]);
+            spdlog::error("{}: {}", func_name, &GeometryShaderErrorMessage[0]);
         }
     }
 
     // Link the program
-    printf("Linking program\n");
+    spdlog::info("{}: Linking program", func_name);
     GLuint ProgramID = glCreateProgram();
     glAttachShader(ProgramID, VertexShaderID);
     glAttachShader(ProgramID, FragmentShaderID);
@@ -154,7 +160,7 @@ GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment
     if (InfoLogLength > 0) {
         std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
         glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-        printf("%s\n", &ProgramErrorMessage[0]);
+        spdlog::error("{}: {}", func_name, &ProgramErrorMessage[0]);
     }
 
     glDeleteShader(VertexShaderID);
@@ -166,6 +172,9 @@ GLuint OGL::LoadShaderFromString(const char* vertex_string, const char* fragment
 
 void OGL::LoadShader(const char* vertex_file_path, const char* fragment_file_path, const char* geometry_file_path)
 {
+    std::string func_name = fmt::format("OGL::LoadShader()");
+    Timer timer(func_name);
+
     // Read the Vertex Shader code from the file
     std::string VertexShaderCode;
     std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
@@ -175,7 +184,7 @@ void OGL::LoadShader(const char* vertex_file_path, const char* fragment_file_pat
             VertexShaderCode += "\n" + Line;
         VertexShaderStream.close();
     } else {
-        printf("Impossible to open %s. Are you in the right directory?\n", vertex_file_path);
+        spdlog::error("{}: Impossible to open {}. Are you in the right directory?", func_name, vertex_file_path);
         return;
     }
 
@@ -188,7 +197,7 @@ void OGL::LoadShader(const char* vertex_file_path, const char* fragment_file_pat
             FragmentShaderCode += "\n" + Line;
         FragmentShaderStream.close();
     } else {
-        printf("Impossible to open %s. Are you in the right directory?\n", fragment_file_path);
+        spdlog::error("{}: Impossible to open {}. Are you in the right directory?", func_name, fragment_file_path);
         return;
     }
 
@@ -202,7 +211,7 @@ void OGL::LoadShader(const char* vertex_file_path, const char* fragment_file_pat
                 GeometryShaderCode += "\n" + Line;
             GeometryShaderStream.close();
         } else {
-            printf("Impossible to open %s. Are you in the right directory?\n", geometry_file_path);
+            spdlog::error("{}: Impossible to open {}. Are you in the right directory?", func_name, geometry_file_path);
             return;
         }
     }
