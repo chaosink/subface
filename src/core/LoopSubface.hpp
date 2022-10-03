@@ -42,6 +42,7 @@ class LoopSubface {
 
 public:
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
+    bool CheckLevel(const std::string& func_name, int level, int base);
     // Same as Tessellate4(int level) if `flat==true`.
     // `compute_limit` matters only when `flat==false`.
     void Subdivide(int level, bool flat, bool compute_limit);

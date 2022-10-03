@@ -175,10 +175,23 @@ void LoopSubface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexe
     indexed_smooth_normals_ = std::move(smooth_normals);
 }
 
+bool LoopSubface::CheckLevel(const std::string& func_name, int level, int base)
+{
+    size_t result_face_count = faces_.size() * std::pow(base, level);
+    if (result_face_count > 1000000) {
+        spdlog::info("{}: Result triangle count {} is too large. Please use a smaller level.", func_name, result_face_count);
+        return true;
+    }
+    return false;
+}
+
 void LoopSubface::Subdivide(int level, bool flat, bool compute_limit)
 {
     std::string func_name = fmt::format("LoopSubface::Subdivide(level={}, flat={}, compute_limit={})", level, flat, compute_limit);
     Timer timer(func_name);
+
+    if (CheckLevel(func_name, level, 4))
+        return;
 
     level_ = level;
 
@@ -341,6 +354,9 @@ void LoopSubface::Tessellate3(int level)
     std::string func_name = fmt::format("LoopSubface::Tessellate3(level={})", level);
     Timer timer(func_name);
 
+    if (CheckLevel(func_name, level, 3))
+        return;
+
     level_ = level;
 
     // Ptrs of base vertexes and faces for the current level.
@@ -435,6 +451,9 @@ void LoopSubface::Tessellate4(int level)
 {
     std::string func_name = fmt::format("LoopSubface::Tessellate4(level={})", level);
     Timer timer(func_name);
+
+    if (CheckLevel(func_name, level, 4))
+        return;
 
     level_ = level;
 
@@ -542,6 +561,9 @@ void LoopSubface::Tessellate4_1(int level)
 {
     std::string func_name = fmt::format("LoopSubface::Tessellate4_1(level={})", level);
     Timer timer(func_name);
+
+    if (CheckLevel(func_name, level, 4))
+        return;
 
     level_ = level;
 
