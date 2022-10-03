@@ -16,7 +16,7 @@ std::vector<std::string> OGL::render_mode_names_ {
 
 OGL::~OGL()
 {
-    glDeleteBuffers(1, &vertex_buffer_);
+    glDeleteBuffers(1, &position_buffer_);
     glDeleteBuffers(1, &normal_buffer_);
     glDeleteVertexArrays(1, &vertex_array_);
     glDeleteProgram(shader_);
@@ -213,11 +213,11 @@ void OGL::LoadShader(const char* vertex_file_path, const char* fragment_file_pat
     mv_ = glGetUniformLocation(shader_, "mv");
 }
 
-void OGL::Vertex(const std::vector<glm::vec3>& vertex)
+void OGL::Position(const std::vector<glm::vec3>& position)
 {
-    glGenBuffers(1, &vertex_buffer_);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertex.size(), vertex.data(), GL_STATIC_DRAW);
+    glGenBuffers(1, &position_buffer_);
+    glBindBuffer(GL_ARRAY_BUFFER, position_buffer_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * position.size(), position.data(), GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
         0, // index
@@ -227,7 +227,7 @@ void OGL::Vertex(const std::vector<glm::vec3>& vertex)
         0, // stride
         (void*)0 // pointer
     );
-    n_vertex_ = vertex.size();
+    n_vertex_ = position.size();
 }
 
 void OGL::Normal(const std::vector<glm::vec3>& normal)

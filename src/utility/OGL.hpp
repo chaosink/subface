@@ -31,7 +31,7 @@ private:
 
     GLuint shader_ = -1;
     GLuint mvp_ = -1, mv_ = -1;
-    GLuint vertex_array_ = -1, vertex_buffer_ = -1, normal_buffer_ = -1;
+    GLuint vertex_array_ = -1, position_buffer_ = -1, normal_buffer_ = -1;
     size_t n_vertex_ = -1;
 
     Toggle enable_cull_face_;
@@ -46,7 +46,7 @@ public:
     ~OGL();
     GLFWwindow* InitGLFW(std::string window_title, int window_w, int window_h, bool cmd_mode);
     void InitGL(const char* vertex_file_path, const char* fragment_file_path, const char* geometry_file_path = nullptr);
-    void Vertex(const std::vector<glm::vec3>& vertex);
+    void Position(const std::vector<glm::vec3>& vertex);
     void Normal(const std::vector<glm::vec3>& normal);
     void MVP(const glm::mat4& mvp) const;
     void MV(const glm::mat4& mv) const;

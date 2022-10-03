@@ -108,11 +108,11 @@ int main(int argc, char* argv[])
 
     auto process = [&](Subface::EProcessingMethod method, int level) {
         Subface::GetProcessingMethod(method).process(sf, level);
-        ogl.Vertex(sf.vertex());
+        ogl.Position(sf.Position());
         if (use_smooth_normal.state())
-            ogl.Normal(sf.normal_smooth());
+            ogl.Normal(sf.NormalSmooth());
         else
-            ogl.Normal(sf.normal_flat());
+            ogl.Normal(sf.NormalFlat());
 
         // ogl.Vertex(model.vertex());
         // ogl.Normal(model.normal());
@@ -124,9 +124,9 @@ int main(int argc, char* argv[])
     while (ogl.Alive()) {
         // clang-format off
         use_smooth_normal.Update([&]() {
-            ogl.Normal(sf.normal_smooth());
+            ogl.Normal(sf.NormalSmooth());
         }, [&]() {
-            ogl.Normal(sf.normal_flat());
+            ogl.Normal(sf.NormalFlat());
         });
 
         auto get_file_name = [&]() {

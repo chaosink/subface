@@ -135,8 +135,29 @@ class Subface {
         std::vector<Vertex>& vertexes, std::vector<Face>& faces);
 
     void ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes, const std::vector<Face*>& faces);
+    bool CheckLevel(const std::string& func_name, int level, int base);
 
 public:
+    void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
+    // Same as Tessellate4(int level) if `flat==true`.
+    // `compute_limit` matters only when `flat==false`.
+    void LoopSubdivide(int level, bool flat, bool compute_limit);
+    // Same as LoopSubdivide(int level, bool flat=true).
+    void Tessellate4(int level);
+    // Another 1-to-4 triangle tessellation pattern than `Tessellate4()`.
+    void Tessellate4_1(int level);
+    // 1-to-3 triangle tessellation by connecting the center to each vertex.
+    void Tessellate3(int level);
+    // Use the implementations from https://github.com/zeux/meshoptimizer
+    // Reduces the number of triangles in the mesh.
+    // if `sloppy==false`:
+    //     Attempte to preserve mesh appearance as much as possible.
+    // else:
+    //     Sacrifice mesh appearance for simplification performance.
+    void MeshoptDecimate(int level, bool sloppy);
+    void Decimate(int level, bool midpoint);
+    void ExportObj(const std::string& file_name, bool smooth) const;
+
     enum EProcessingMethod {
         PM_SubdivideSmooth,
         PM_SubdivideSmoothNoLimit,
@@ -156,39 +177,18 @@ public:
     };
     static const Subface::ProcessingMethod& GetProcessingMethod(EProcessingMethod method);
 
-    void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
-    bool CheckLevel(const std::string& func_name, int level, int base);
-    // Same as Tessellate4(int level) if `flat==true`.
-    // `compute_limit` matters only when `flat==false`.
-    void LoopSubdivide(int level, bool flat, bool compute_limit);
-    // Same as LoopSubdivide(int level, bool flat=true).
-    void Tessellate4(int level);
-    // Another 1-to-4 triangle tessellation pattern than `Tessellate4()`.
-    void Tessellate4_1(int level);
-    // 1-to-3 triangle tessellation by connecting the center to each vertex.
-    void Tessellate3(int level);
-    // Use the implementations from https://github.com/zeux/meshoptimizer
-    // Reduces the number of triangles in the mesh.
-    // if `sloppy==false`:
-    //     Attempte to preserve mesh appearance as much as possible.
-    // else:
-    //     Sacrifice mesh appearance for simplification performance.
-    void MeshoptDecimate(int level, bool sloppy);
-    void Decimate(int level, bool midpoint);
-
-    const std::vector<glm::vec3>& vertex() const
+    const std::vector<glm::vec3>& Position() const
     {
         return unindexed_positions_;
     }
-    const std::vector<glm::vec3>& normal_smooth() const
+    const std::vector<glm::vec3>& NormalSmooth() const
     {
         return unindexed_smooth_normals_;
     }
-    const std::vector<glm::vec3>& normal_flat() const
+    const std::vector<glm::vec3>& NormalFlat() const
     {
         return unindexed_flat_normals_;
     }
-    void ExportObj(const std::string& file_name, bool smooth) const;
 };
 
 }
