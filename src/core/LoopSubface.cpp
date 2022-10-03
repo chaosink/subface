@@ -884,7 +884,8 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
             return false;
     }
 
-    std::vector<const Vertex*> ring = v1->OneRing();
+    std::vector<const Vertex*> ring0 = v0->OneRing();
+    std::vector<const Vertex*> ring1 = v1->OneRing();
 
     std::vector<Face*> collapse_f;
     std::vector<Vertex*> collapse_f_v;
@@ -944,7 +945,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
         f->v[v1_id] = v0;
     }
 
-    for (auto v : ring) {
+    for (auto v : ring1) {
         auto e_it = queue.find({ v, v1 });
         if (e_it != queue.end()) {
             queue.erase(e_it);
@@ -966,6 +967,11 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
         v0->ComputeStartFaceAndBoundary();
         v0->ComputeValence();
     } else {
+        for (auto v : ring0) {
+            auto e_it = queue.find({ v, v0 });
+            if (e_it != queue.end())
+                queue.erase(e_it);
+        }
         v0->child = reinterpret_cast<Vertex*>(1);
     }
 
