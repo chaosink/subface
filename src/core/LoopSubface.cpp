@@ -791,7 +791,7 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     size_t position_count = origin_positions_.size();
     float threshold = (1 <= level && level <= 9) ? (1.f - level * 0.1f) : 1.f;
     size_t target_index_count = static_cast<size_t>(index_count * threshold);
-    float target_error = 100.f;
+    float target_error = 1.f;
 
     std::vector<uint32_t> result_indexes(index_count);
     // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
