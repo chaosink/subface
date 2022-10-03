@@ -1,10 +1,6 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
 #include <functional>
-#include <memory>
-#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -44,20 +40,8 @@ struct Edge {
     Face* f;
     int id;
 
-    Edge(const Vertex* v0 = nullptr, const Vertex* v1 = nullptr)
-    {
-        v[0] = std::min(v0, v1);
-        v[1] = std::max(v0, v1);
-        f = nullptr;
-        id = -1;
-    }
-
-    bool operator<(const Edge& e) const
-    {
-        const std::array<void*, 2>& a = *reinterpret_cast<const std::array<void*, 2>*>(v);
-        const std::array<void*, 2>& b = *reinterpret_cast<const std::array<void*, 2>*>(e.v);
-        return a < b;
-    }
+    Edge(const Vertex* v0 = nullptr, const Vertex* v1 = nullptr);
+    bool operator<(const Edge& e) const;
 };
 
 struct Face {
@@ -65,45 +49,13 @@ struct Face {
     const Face* neighbors[3];
     Face* children[4];
 
-    Face()
-    {
-        for (int i = 0; i < 3; ++i) {
-            v[i] = nullptr;
-            neighbors[i] = nullptr;
-        }
-        for (int i = 0; i < 4; ++i)
-            children[i] = nullptr;
-    }
+    Face();
 
-    int VertexId(const Vertex* vertex) const
-    {
-        for (int i = 0; i < 3; ++i)
-            if (v[i] == vertex)
-                return i;
-        return -1;
-    }
-
-    void Shift(int k)
-    {
-        k %= 3;
-        std::rotate(v, v + k, v + 3);
-        std::rotate(neighbors, neighbors + k, neighbors + 3);
-    }
-
+    int VertexId(const Vertex* vertex) const;
+    void Shift(int k);
     // Detect opposite neighbor triangles.
     // For traversal, `f_next == f_last` or `v_next == v_last` also work.
-    bool OppositeNeighbor(int k) const
-    {
-        const Face* fn = neighbors[k];
-        // This checking using vertex IDs is more robust than the following which cannot handle
-        // 2 triangles sharing the same 3 vertexes (really rare cases).
-        //     // Works for most cases.
-        //     // Works for model tri2_overlap_same, but doesn't for model tri2_overlap_opposite.
-        //     `fn->neighbors[fn_ci] == f`
-        //     // Works for model tri2_overlap_opposite, but doesn't for model tri2_overlap_same.
-        //     `fn->neighbors[fn_ci] == f && fn->neighbors[PREV(fn_ci)] != f`
-        return fn ? fn->VertexId(v[NEXT(k)]) == NEXT(fn->VertexId(v[k])) : false;
-    }
+    bool OppositeNeighbor(int k) const;
 
     const Face* NextNeighbor(const Vertex* vertex) const
     {
@@ -148,6 +100,95 @@ public:
         size_ += sizeof(T);
         return p;
     }
+};
+
+class Subface {
+    int level_ = 0;
+    size_t result_face_count_ = 0;
+
+    std::vector<glm::vec3> origin_positions_;
+    std::vector<uint32_t> origin_indexes_;
+
+    std::vector<Vertex> vertexes_;
+    std::vector<Face> faces_;
+
+    std::vector<glm::vec3> unindexed_positions_;
+    std::vector<glm::vec3> unindexed_smooth_normals_;
+    std::vector<glm::vec3> unindexed_flat_normals_;
+
+    std::vector<glm::vec3> indexed_positions_;
+    std::vector<glm::vec3> indexed_smooth_normals_;
+    std::vector<glm::vec3> indexed_flat_normals_;
+
+    std::vector<int> vertex_indexes_;
+    std::vector<int> smooth_normal_indexes_;
+    std::vector<int> flat_normal_indexes_;
+
+    // Only for non-boundary vertexes.
+    static float Beta(int valence);
+    // Only for non-boundary vertexes.
+    static float LoopGamma(int valence);
+    static glm::vec3 WeightOneRing(Vertex* vertex, float beta);
+    // Only for boundary vertexes.
+    static glm::vec3 WeightBoundary(Vertex* v, float beta);
+    static void BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
+        std::vector<Vertex>& vertexes, std::vector<Face>& faces);
+
+    void ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes, const std::vector<Face*>& faces);
+
+public:
+    enum EProcessingMethod {
+        PM_SubdivideSmooth,
+        PM_SubdivideSmoothNoLimit,
+        PM_SubdivideFlat,
+        PM_Tessellate4,
+        PM_Tessellate4_1,
+        PM_Tessellate3,
+        PM_MeshoptDecimate,
+        PM_MeshoptDecimateSloppy,
+        PM_Decimate_ShortestEdge_V0,
+        PM_Decimate_ShortestEdge_Midpoint,
+        PM_Count,
+    };
+    struct ProcessingMethod {
+        std::string name;
+        std::function<void(Subface& sf, int level)> process;
+    };
+    static const Subface::ProcessingMethod& GetProcessingMethod(EProcessingMethod method);
+
+    void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
+    bool CheckLevel(const std::string& func_name, int level, int base);
+    // Same as Tessellate4(int level) if `flat==true`.
+    // `compute_limit` matters only when `flat==false`.
+    void LoopSubdivide(int level, bool flat, bool compute_limit);
+    // Same as LoopSubdivide(int level, bool flat=true).
+    void Tessellate4(int level);
+    // Another 1-to-4 triangle tessellation pattern than `Tessellate4()`.
+    void Tessellate4_1(int level);
+    // 1-to-3 triangle tessellation by connecting the center to each vertex.
+    void Tessellate3(int level);
+    // Use the implementations from https://github.com/zeux/meshoptimizer
+    // Reduces the number of triangles in the mesh.
+    // if `sloppy==false`:
+    //     Attempte to preserve mesh appearance as much as possible.
+    // else:
+    //     Sacrifice mesh appearance for simplification performance.
+    void MeshoptDecimate(int level, bool sloppy);
+    void Decimate(int level, bool midpoint);
+
+    const std::vector<glm::vec3>& vertex() const
+    {
+        return unindexed_positions_;
+    }
+    const std::vector<glm::vec3>& normal_smooth() const
+    {
+        return unindexed_smooth_normals_;
+    }
+    const std::vector<glm::vec3>& normal_flat() const
+    {
+        return unindexed_flat_normals_;
+    }
+    void ExportObj(const std::string& file_name, bool smooth) const;
 };
 
 }

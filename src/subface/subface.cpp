@@ -6,76 +6,16 @@
 #include "Model.hpp"
 #include "OGL.hpp"
 
-#include "LoopSubface.hpp"
+#include "Subface.hpp"
 using namespace subface;
-
-enum EProcessingMethod {
-    PM_SubdivideSmooth,
-    PM_SubdivideSmoothNoLimit,
-    PM_SubdivideFlat,
-    PM_Tessellate4,
-    PM_Tessellate4_1,
-    PM_Tessellate3,
-    PM_MeshoptDecimate,
-    PM_MeshoptDecimateSloppy,
-    PM_Decimate_ShortestEdge_V0,
-    PM_Decimate_ShortestEdge_Midpoint,
-    PM_Count,
-};
-struct ProcessingMethod {
-    std::string name;
-    std::function<void(LoopSubface& ls, int level)> process;
-};
-std::vector<ProcessingMethod> processing_methods = {
-    { "SubdivideSmooth",
-        [](LoopSubface& ls, int level) {
-            ls.Subdivide(level, false, true);
-        } }, // Key 1
-    { "SubdivideSmoothNoLimit",
-        [](LoopSubface& ls, int level) {
-            ls.Subdivide(level, false, false);
-        } }, // Key 2
-    { "SubdivideFlat",
-        [](LoopSubface& ls, int level) {
-            ls.Subdivide(level, true, false);
-        } }, // Key 3
-    { "Tessellate4",
-        [](LoopSubface& ls, int level) {
-            ls.Tessellate4(level);
-        } }, // Key 4
-    { "Tessellate4_1",
-        [](LoopSubface& ls, int level) {
-            ls.Tessellate4_1(level);
-        } }, // Key 5
-    { "Tessellate3",
-        [](LoopSubface& ls, int level) {
-            ls.Tessellate3(level);
-        } }, // Key 6
-    { "MeshoptDecimate",
-        [](LoopSubface& ls, int level) {
-            ls.MeshoptDecimate(level, false);
-        } }, // Key 7
-    { "MeshoptDecimateSloppy",
-        [](LoopSubface& ls, int level) {
-            ls.MeshoptDecimate(level, true);
-        } }, // Key 8
-    { "Decimate_ShortestEdge_V0",
-        [](LoopSubface& ls, int level) {
-            ls.Decimate(level, false);
-        } }, // Key 9
-    { "Decimate_ShortestEdge_Midpoint",
-        [](LoopSubface& ls, int level) {
-            ls.Decimate(level, true);
-        } }, // Key 0
-};
 
 int main(int argc, char* argv[])
 {
     argparse::ArgumentParser program("subface", "v0.1.0");
     // Program description.
     std::string description = "Process geometries with one of the following methods:\n";
-    for (int i = 0; i < PM_Count; ++i)
-        description += fmt::format("    {}.{}\n", i + 1, processing_methods[i].name);
+    for (int i = 0; i < Subface::PM_Count; ++i)
+        description += fmt::format("    {}.{}\n", i + 1, Subface::GetProcessingMethod(static_cast<Subface::EProcessingMethod>(i)).name);
     program.add_description(description);
     // Positional arguments.
     program.add_argument("OBJ_file_path")
@@ -141,7 +81,7 @@ int main(int argc, char* argv[])
     bool cull_face = program.get<bool>("--cull");
     bool transparent_window = program.get<bool>("--transparent");
     OGL::ERenderMode render_mode = static_cast<OGL::ERenderMode>(program.get<int>("--render") % OGL::RM_Count);
-    EProcessingMethod method = static_cast<EProcessingMethod>((program.get<int>("--method") - 1 + PM_Count) % PM_Count);
+    Subface::EProcessingMethod method = static_cast<Subface::EProcessingMethod>((program.get<int>("--method") - 1 + Subface::PM_Count) % Subface::PM_Count);
     int level = program.get<int>("--level") % 10;
 
     int window_w = 1280;
@@ -163,42 +103,42 @@ int main(int argc, char* argv[])
 
     Model model(ogl.window(), file_path);
 
-    LoopSubface ls;
-    ls.BuildTopology(model.indexed_vertex(), model.index());
+    Subface sf;
+    sf.BuildTopology(model.indexed_vertex(), model.index());
 
-    auto process = [&](int method, int level) {
-        processing_methods[method].process(ls, level);
-        ogl.Vertex(ls.vertex());
+    auto process = [&](Subface::EProcessingMethod method, int level) {
+        Subface::GetProcessingMethod(method).process(sf, level);
+        ogl.Vertex(sf.vertex());
         if (use_smooth_normal.state())
-            ogl.Normal(ls.normal_smooth());
+            ogl.Normal(sf.normal_smooth());
         else
-            ogl.Normal(ls.normal_flat());
+            ogl.Normal(sf.normal_flat());
 
         // ogl.Vertex(model.vertex());
         // ogl.Normal(model.normal());
     };
     process(method, level);
 
-    EProcessingMethod method_old = method;
+    Subface::EProcessingMethod method_old = method;
     int level_old = level;
     while (ogl.Alive()) {
         // clang-format off
         use_smooth_normal.Update([&]() {
-            ogl.Normal(ls.normal_smooth());
+            ogl.Normal(sf.normal_smooth());
         }, [&]() {
-            ogl.Normal(ls.normal_flat());
+            ogl.Normal(sf.normal_flat());
         });
 
         auto get_file_name = [&]() {
             return fmt::format("{}.{}.{}",
                 file_path.substr(0, file_path.find_last_of('.')),
-                level == 0 ? "origin" : processing_methods[method].name + ".level_" + char('0' + level),
+                level == 0 ? "origin" : Subface::GetProcessingMethod(method).name + ".level_" + char('0' + level),
                 use_smooth_normal.state() ? "smooth" : "flat"
             );
         };
 
         auto export_obj_func = [&]() {
-            ls.ExportObj(get_file_name() + ".obj", use_smooth_normal.state());
+            sf.ExportObj(get_file_name() + ".obj", use_smooth_normal.state());
         };
         export_obj.Update(export_obj_func);
 
@@ -211,8 +151,8 @@ int main(int argc, char* argv[])
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
             if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-                    if (GLFW_KEY_0 <= key && key <= GLFW_KEY_0 + PM_Count)
-                        method = static_cast<EProcessingMethod>((key - GLFW_KEY_1 + PM_Count) % PM_Count);
+                    if (GLFW_KEY_0 <= key && key <= GLFW_KEY_0 + Subface::PM_Count)
+                        method = static_cast<Subface::EProcessingMethod>((key - GLFW_KEY_1 + Subface::PM_Count) % Subface::PM_Count);
                 } else {
                     level = key - GLFW_KEY_0;
                 }
@@ -222,7 +162,7 @@ int main(int argc, char* argv[])
             method_old = method;
             process(method, level);
         }
-        if (PM_MeshoptDecimate <= method && method <= PM_Decimate_ShortestEdge_Midpoint) { // Decimation methods.
+        if (Subface::PM_MeshoptDecimate <= method && method <= Subface::PM_Decimate_ShortestEdge_Midpoint) { // Decimation methods.
             decimate_one_less_face.Update(
                 [&]() {
                     process(method, -1); // `level == -1` means "decimate one less face".
@@ -240,7 +180,7 @@ int main(int argc, char* argv[])
         }
 
         std::string program_info = fmt::format("{}(level={})",
-            processing_methods[method].name, level);
+            Subface::GetProcessingMethod(method).name, level);
         ogl.Update(program_info);
 
         if (cmd_mode) {

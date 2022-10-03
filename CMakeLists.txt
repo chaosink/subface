@@ -29,14 +29,16 @@ add_library(meshoptimizer
 	src/thirdparty/meshoptimizer/simplifier.cpp
 	src/thirdparty/meshoptimizer/vfetchoptimizer.cpp
 )
-
+add_library(Timer
+	src/utility/Timer.cpp
+)
 add_library(core
 	src/core/Subface.cpp
-	src/core/LoopSubface.cpp
 )
 target_link_libraries(core
 	spdlog::spdlog
 	meshoptimizer
+	Timer
 )
 
 add_library(utility
