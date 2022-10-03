@@ -111,6 +111,8 @@ int main(int argc, char* argv[])
     Toggle enable_smooth_normal(ogl.window(), GLFW_KEY_N, false);
     Toggle enable_cull_face(ogl.window(), GLFW_KEY_C, false);
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
+    Toggle decimate_one_less_face(ogl.window(), GLFW_KEY_COMMA, false);
+    Toggle decimate_one_more_face(ogl.window(), GLFW_KEY_PERIOD, false);
     Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
     Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
     EProcessingMethod method = PM_SubdivideSmooth, method_old = PM_SubdivideSmooth;
@@ -201,6 +203,16 @@ int main(int argc, char* argv[])
             level_old = level;
             method_old = method;
             process(method, level);
+        }
+        if (PM_MeshoptDecimate <= method && method <= PM_MeshoptDecimateSloppy) { // Decimation methods.
+            decimate_one_less_face.Update(
+                [&]() {
+                    process(method, -1); // `level == -1` means "decimate one less face".
+                });
+            decimate_one_more_face.Update(
+                [&]() {
+                    process(method, -2); // `level == -2` means "decimate one more face".
+                });
         }
 
         if (render_mode == RM_FacesWireframe) {

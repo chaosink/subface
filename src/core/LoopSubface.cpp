@@ -785,29 +785,34 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     std::string func_name = fmt::format("LoopSubface::MeshoptDecimate(level={}, sloppy={})", level, sloppy);
     Timer timer(func_name);
 
-    level_ = level;
+    if (level >= 0)
+        level_ = level;
 
     size_t index_count = origin_indexes_.size();
     size_t position_count = origin_positions_.size();
-    float threshold = (1 <= level && level <= 9) ? (1.f - level * 0.1f) : 1.f;
+    float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
     /* Hardcoded threshold table. */
     // float threshold_table[] { 1.f, 0.5f, 0.25f, 0.125f, 0.0625f, 0.03125f };
     // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
     size_t target_index_count = static_cast<size_t>(index_count * threshold);
+    if (level == -1)
+        target_index_count = result_index_count_ + 6;
+    else if (level == -2)
+        target_index_count = result_index_count_ - 6;
     float target_error = 1.f;
 
     std::vector<uint32_t> result_indexes(index_count);
     // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
-    size_t result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
+    result_index_count_ = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
         &origin_positions_[0].x, position_count, sizeof(glm::vec3),
         target_index_count, target_error);
-    result_indexes.resize(result_index_count);
+    result_indexes.resize(result_index_count_);
 
     std::vector<glm::vec3> result_positions(position_count);
     size_t result_position_count = 0;
     // `result_index_count` may be 0 meaning all the triangles are decimated.
-    if (result_index_count)
-        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
+    if (result_index_count_)
+        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count_,
             &origin_positions_[0].x, position_count, sizeof(glm::vec3));
     result_positions.resize(result_position_count);
 

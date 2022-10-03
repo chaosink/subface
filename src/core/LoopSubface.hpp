@@ -8,6 +8,7 @@ namespace subface {
 
 class LoopSubface {
     int level_ = 0;
+    int result_index_count_ = 0;
 
     std::vector<glm::vec3> origin_positions_;
     std::vector<uint32_t> origin_indexes_;
