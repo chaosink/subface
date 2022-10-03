@@ -43,20 +43,14 @@ Camera::Camera(GLFWwindow* window, int window_w, int window_h, double time)
     // glfwGetCursorPos(window_, &x_, &y_);
 }
 
-glm::mat4 Camera::Update(double time)
+void Camera::Update(double time)
 {
-    fix_.Update([this] { // call this lambda when toggle `fix_` turn on
-        mvp_ = glm::mat4(
-            0.248478, 0.101469, 0.068964, 0.068950,
-            0.000000, 0.412284, -0.104119, -0.104098,
-            0.109658, -0.229920, -0.156267, -0.156235,
-            0.011467, 0.022832, 0.527813, 0.547706);
-    },
-        [this] { // call this lambda when toggle `fix_` turn off
-            glfwGetCursorPos(window_, &x_, &y_);
-        });
-    if (fix_.state())
-        return mvp_;
+    fix_.Update();
+    if (fix_.state()) {
+        mv_ = mv_fix_;
+        mvp_ = mvp_fix_;
+        return;
+    }
 
     float delta_time = static_cast<float>(time - time_);
     time_ = time;
@@ -174,11 +168,12 @@ glm::mat4 Camera::Update(double time)
         angle_vertical_ = angle_vertical_init_;
         fov_ = fov_init_;
     }
-    print_vp_.Update([this] { // call this lambda when toggle `print_vp_` turn on
-        PrintMat(mvp_, "\t\t", "mvp_");
+    print_vp_.Update([this] { // Call this lambda when toggle `print_vp_` turns on.
         PrintMat(m_, "\t\t", "m_");
         PrintMat(v_, "\t\t", "v_");
         PrintMat(p_, "\t\t", "p_");
+        PrintMat(mv_, "\t\t", "mv_");
+        PrintMat(mvp_, "\t\t", "mvp_");
     });
     fov_ += static_cast<float>(delta_time * scroll_speed_ * scoll);
     scoll = 0;
@@ -193,6 +188,4 @@ glm::mat4 Camera::Update(double time)
 
     mv_ = v_ * m_;
     mvp_ = p_ * mv_;
-
-    return mvp_;
 }

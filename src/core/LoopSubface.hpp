@@ -70,7 +70,7 @@ public:
     {
         return unindexed_flat_normals_;
     }
-    void ExportObj(std::string file_name, bool smooth) const;
+    void ExportObj(const std::string& file_name, bool smooth) const;
 };
 
 }

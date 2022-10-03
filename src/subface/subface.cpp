@@ -67,15 +67,20 @@ std::vector<std::string> render_mode_names {
 int main(int argc, char* argv[])
 {
     bool cmd_mode = false;
-    int cmd_level = 0;
+    int cmd_method = 0, cmd_level = 0;
     if (argc < 2) {
-        printf("Usage: subface model_file [level]\n");
-        printf("Cmd mode only with OBJ export and PNG save if level is specified.\n");
+        std::cout << "Usage: subface model_file [processing_method_id level]" << std::endl;
+        std::cout << "Cmd mode with OBJ export and PNG save is used if processing_method_id and level is specified." << std::endl;
+        std::cout << "All processing methods:" << std::endl;
+        for (int i = 0; i < processing_methods.size(); ++i)
+            std::cout << fmt::format("    {}.{}", i + 1, processing_methods[i].name) << std::endl;
         return 0;
-    } else if (argc == 3) {
+    } else if (argc == 4) {
         cmd_mode = true;
-        cmd_level = atoi(argv[2]);
+        cmd_method = atoi(argv[2]) - 1;
+        cmd_level = atoi(argv[3]);
     }
+    const std::string file_path = argv[1];
 
     int window_w = 1280;
     int window_h = 720;
@@ -84,7 +89,7 @@ int main(int argc, char* argv[])
     ogl.InitGLFW("Subface", window_w, window_h, cmd_mode);
     ogl.InitGL("shader/vertex.glsl", "shader/fragment.glsl");
 
-    Model model(ogl.window(), argv[1]);
+    Model model(ogl.window(), file_path);
 
     LoopSubface ls;
     ls.BuildTopology(model.indexed_vertex(), model.index());
@@ -102,23 +107,26 @@ int main(int argc, char* argv[])
     Toggle enable_transparent_window(ogl.window(), GLFW_KEY_T, false);
     Toggle export_obj(ogl.window(), GLFW_KEY_O, false);
     Toggle save_png(ogl.window(), GLFW_KEY_F2, false);
-    int level = 0, level_old = -1;
     int method = 0, method_old = -1;
-
-    if (cmd_mode) {
-        level = cmd_level;
-        enable_smooth_normal.state(true);
-    }
+    int level = 0, level_old = -1;
 
     double time = ogl.time();
     Camera camera(ogl.window(), window_w, window_h, time);
+
+    if (cmd_mode) {
+        method = cmd_method;
+        level = cmd_level;
+        // enable_smooth_normal.state(true);
+        camera.Fix(true);
+    }
+
     while (ogl.Alive()) {
         time = ogl.time();
         ogl.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 mvp = camera.Update(time);
-        ogl.MVP(mvp);
+        camera.Update(time);
         ogl.MV(camera.mv());
+        ogl.MVP(camera.mvp());
 
         // clang-format off
         switch_render_mode.Update([&]() {
@@ -143,19 +151,21 @@ int main(int argc, char* argv[])
             glClearColor(0.08f, 0.16f, 0.24f, 1.f);
         });
 
+        auto get_file_name = [&]() {
+            return fmt::format("{}.{}.{}",
+                file_path.substr(0, file_path.find_last_of('.')),
+                level == 0 ? "origin" : processing_methods[method].name + ".level_" + char('0' + level),
+                enable_smooth_normal.state() ? "smooth" : "flat"
+            );
+        };
+
         auto export_obj_func = [&]() {
-            ls.ExportObj(argv[1], enable_smooth_normal.state());
+            ls.ExportObj(get_file_name() + ".obj", enable_smooth_normal.state());
         };
         export_obj.Update(export_obj_func);
 
         auto save_png_func = [&]() {
-            string file_name = argv[1];
-            file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level);
-            if (enable_smooth_normal.state())
-                file_name += "_smooth.png";
-            else
-                file_name += "_flat.png";
-            ogl.SavePng(file_name);
+            ogl.SavePng(get_file_name() + ".png");
         };
         save_png.Update(save_png_func);
         // clang-format on
@@ -201,7 +211,7 @@ int main(int argc, char* argv[])
         ogl.Update(title);
 
         if (cmd_mode) {
-            export_obj_func();
+            // export_obj_func();
             save_png_func();
             break;
         }

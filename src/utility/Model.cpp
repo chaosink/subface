@@ -1,19 +1,17 @@
 #include "Model.hpp"
 
-#include <cstdio>
-
 #include "glm/gtc/matrix_transform.hpp"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-Model::Model(GLFWwindow* window, const char* file_name)
+Model::Model(GLFWwindow* window, const std::string& file_name)
     : window_(window)
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string err;
-    tinyobj::LoadObj(&attrib, &shapes, &materials, &err, file_name);
+    tinyobj::LoadObj(&attrib, &shapes, &materials, &err, file_name.c_str());
 
     for (size_t s = 0; s < shapes.size(); s++)
         for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)

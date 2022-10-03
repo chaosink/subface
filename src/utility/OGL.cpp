@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+#include <spdlog/spdlog.h>
+
+#include "Timer.hpp"
+
 OGL::~OGL()
 {
     glDeleteBuffers(1, &vertex_buffer_);
@@ -273,9 +277,11 @@ void OGL::Update(const std::string& info)
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-#include <spdlog/spdlog.h>
-void OGL::SavePng(std::string file_name)
+void OGL::SavePng(const std::string &file_name)
 {
+    std::string func_name = fmt::format("OGL::SavePng(file_name={})", file_name);
+    Timer timer(func_name);
+
     int w, h;
     glfwGetFramebufferSize(window_, &w, &h);
     GLsizei n_channel = 3;
@@ -289,5 +295,5 @@ void OGL::SavePng(std::string file_name)
     stbi_flip_vertically_on_write(true);
     stbi_write_png(file_name.c_str(), w, h, n_channel, buffer.data(), stride);
 
-    spdlog::info("PNG saved: {}", file_name);
+    spdlog::info("{}: PNG saved: {}", func_name, file_name);
 }

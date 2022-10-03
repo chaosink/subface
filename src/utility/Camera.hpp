@@ -17,6 +17,8 @@ class Camera {
 
     const glm::mat4 m_init_ = glm::scale(glm::mat4(1.f), glm::vec3(0.2f));
     glm::mat4 m_ = m_init_, v_ { 1.f }, p_ { 1.f }, mv_ { 1.f }, mvp_ { 1.f };
+    glm::mat4 mv_fix_ { 0.182916, 0.041963, -0.069143, 0.000000, 0.000000, 0.170976, 0.103765, 0.000000, 0.080881, -0.094902, 0.156371, 0.000000, 0.008600, 0.010363, -0.546909, 1.000000 };
+    glm::mat4 mvp_fix_ { 0.248399, 0.101308, 0.069157, 0.069143, 0.000000, 0.412772, -0.103786, -0.103765, 0.109836, -0.229113, -0.156402, -0.156371, 0.011679, 0.025018, 0.527017, 0.546909 };
 
     const glm::vec3 position_init_ = glm::vec3(0.f, 0.f, 1.f);
     const float angle_horizontal_init_ = static_cast<float>(PI);
@@ -43,6 +45,8 @@ class Camera {
 
 public:
     Camera(GLFWwindow* window, int window_w, int window_h, double time);
+    void Update(double time);
+
     const glm::mat4& mv()
     {
         return mv_;
@@ -51,5 +55,8 @@ public:
     {
         return mvp_;
     }
-    glm::mat4 Update(double time);
+    void Fix(bool fix)
+    {
+        fix_.state(fix);
+    }
 };

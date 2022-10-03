@@ -47,7 +47,7 @@ void Timer::Snapshot(const std::string& name)
         end_ = std::chrono::steady_clock::now();
         duration_ += end_ - start_;
     }
-    spdlog::info("Time of {} at {}: {}", name_, name, duration_.count());
+    spdlog::info("{}: Elapsed time at {}: {}", name_, name, duration_.count());
 }
 
 void Timer::Stop()
@@ -59,6 +59,6 @@ void Timer::Stop()
         }
         state_ = Stopped;
 
-        spdlog::info("Time of {}: {}", name_, duration_.count());
+        spdlog::info("{}: Elapsed time: {}", name_, duration_.count());
     }
 }

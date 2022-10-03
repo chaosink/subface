@@ -823,16 +823,11 @@ void LoopSubface::MeshoptDecimate(int level, bool sloppy)
     spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
-void LoopSubface::ExportObj(std::string file_name, bool smooth) const
+void LoopSubface::ExportObj(const std::string& file_name, bool smooth) const
 {
     std::string func_name = fmt::format("LoopSubface::ExportObj(file_name={}, smooth={})", file_name, smooth);
     Timer timer(func_name);
 
-    file_name = file_name.substr(0, file_name.size() - 4) + "_loop-" + char('0' + level_);
-    if (smooth)
-        file_name += "_smooth.obj";
-    else
-        file_name += "_flat.obj";
     std::ofstream ofs(file_name);
 
     for (auto& v : indexed_positions_)

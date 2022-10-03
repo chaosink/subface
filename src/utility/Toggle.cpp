@@ -1,6 +1,6 @@
 #include "Toggle.hpp"
 
-bool Toggle::Update(std::function<void()> Off2On, std::function<void()> On2Off)
+bool Toggle::Update(const std::function<void()> &Off2On, const std::function<void()> &On2Off)
 {
     if (count_-- > 0)
         return state_;
@@ -9,10 +9,10 @@ bool Toggle::Update(std::function<void()> Off2On, std::function<void()> On2Off)
             state_ = !state_;
             if (state_)
                 Off2On();
-            // call Off2On() when state_ changes from off(false) to on(true)
+            // Call Off2On() when state_ changes from off(false) to on(true).
             else
                 On2Off();
-            // call On2Off() when state_ changes from on(true) to off(false)
+            // Call On2Off() when state_ changes from on(true) to off(false).
             pressed_ = true;
             count_ = jitter_;
         }
@@ -25,14 +25,14 @@ bool Toggle::Update(std::function<void()> Off2On, std::function<void()> On2Off)
     return state_;
 }
 
-bool Toggle::Update(std::function<void()> F)
+bool Toggle::Update(const std::function<void()> &F)
 {
     if (count_-- > 0)
         return state_;
     if (glfwGetKey(window_, key_) == GLFW_PRESS) {
         if (!pressed_) {
             state_ = !state_;
-            F(); // call F() when state_ changes
+            F(); // Call F() when state_ changes.
             pressed_ = true;
             count_ = jitter_;
         }

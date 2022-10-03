@@ -1,8 +1,10 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
-#include <vector>
 
 class Model {
     GLFWwindow* window_;
@@ -19,7 +21,7 @@ class Model {
     std::vector<uint32_t> index_;
 
 public:
-    Model(GLFWwindow* window, const char* file_name);
+    Model(GLFWwindow* window, const std::string& file_name);
     ~Model() { }
     size_t n_vertex()
     {
