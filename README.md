@@ -94,10 +94,10 @@ key | function
 <table>
 	<!-- FacesWireframe, FacesOnly -->
 	<tr align="center">
-		<th>
+		<th width="50%">
 			FacesWireframe
 		</th>
-		<th>
+		<th width="50%">
 			FacesOnly
 		</th>
 	</tr>
@@ -133,10 +133,10 @@ key | function
 <table>
 	<!-- original mesh -->
 	<tr align="center">
-		<th>
+		<th width="50%">
 			original mesh, Normal_flat
 		</th>
-		<th>
+		<th width="50%">
 			original mesh, Normal_smooth
 		</th>
 	</tr>
@@ -222,10 +222,10 @@ key | function
 
 <table>
 	<tr align="center">
-		<th>
+		<th width="50%">
 			LoopSubdivideSmooth
 		</th>
-		<th>
+		<th width="50%">
 			LoopSubdivideSmoothNoLimit
 		</th>
 	</tr>
