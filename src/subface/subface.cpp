@@ -218,6 +218,12 @@ int main(int argc, char* argv[])
                 [&]() {
                     process(method, -2); // `level == -2` means "decimate one more face".
                 });
+            if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
+                if (glfwGetKey(ogl.window(), GLFW_KEY_COMMA) == GLFW_PRESS)
+                    process(method, -1); // `level == -1` means "decimate one less face
+                if (glfwGetKey(ogl.window(), GLFW_KEY_PERIOD) == GLFW_PRESS)
+                    process(method, -2); // `level == -2` means "decimate one more face
+            }
         }
 
         if (render_mode == RM_FacesWireframe) {
