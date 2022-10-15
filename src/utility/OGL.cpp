@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <spdlog/spdlog.h>
+#include <stb_image_write.cpp>
 
 #include "Timer.hpp"
 
@@ -333,8 +334,6 @@ void OGL::Update(const std::string& program_info)
     glfwPollEvents();
 }
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
 void OGL::SavePng(const std::string& file_name) const
 {
     std::string func_name = fmt::format("OGL::SavePng(file_name={})", file_name);

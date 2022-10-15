@@ -3,7 +3,7 @@ project(subface LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 if(MSVC)
-	add_definitions(-DCONSTEXPR=const -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
+	add_definitions(-DCONSTEXPR=const -DNOMINMAX)
 else()
 	add_definitions(-DCONSTEXPR=constexpr)
 	set(CXX_WARNINGS "-Wall -Wextra -Wpointer-arith -Wcast-align -fstrict-aliasing -Wno-comment")
@@ -53,6 +53,16 @@ target_link_libraries(core PRIVATE
 	meshoptimizer
 )
 
+add_library(stb_image_write
+	src/thirdparty/stb_image_write.cpp
+)
+target_compile_definitions(stb_image_write PRIVATE STB_IMAGE_WRITE_IMPLEMENTATION)
+if(MSVC)
+	target_compile_options(stb_image_write PRIVATE "/W0")
+else()
+	target_compile_options(stb_image_write PRIVATE "-w")
+endif()
+
 add_library(utility
 	src/utility/Camera.cpp
 	src/utility/FPS.cpp
@@ -62,6 +72,7 @@ add_library(utility
 	src/utility/Toggle.cpp
 )
 target_link_libraries(utility PRIVATE
+	stb_image_write
 	spdlog::spdlog
 	glew_s
 	glfw
