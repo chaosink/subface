@@ -4,6 +4,8 @@ project(subface LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 if(MSVC)
 	add_definitions(-DCONSTEXPR=const -DNOMINMAX)
+	# For GLEW shared library.
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4281")
 else()
 	add_definitions(-DCONSTEXPR=constexpr)
 	set(CXX_WARNINGS "-Wall -Wextra -Wpointer-arith -Wcast-align -fstrict-aliasing -Wno-comment")
