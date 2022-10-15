@@ -167,6 +167,7 @@ public:
         PM_Tessellate4,
         PM_Tessellate4_1,
         PM_Tessellate3,
+
         PM_MeshoptDecimate,
         PM_MeshoptDecimateSloppy,
         PM_Decimate_ShortestEdge_V0,

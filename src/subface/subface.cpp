@@ -133,8 +133,11 @@ int main(int argc, char* argv[])
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
             if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-                    if (GLFW_KEY_0 <= key && key <= GLFW_KEY_0 + Subface::PM_Count)
-                        method = static_cast<Subface::EProcessingMethod>((key - GLFW_KEY_1 + Subface::PM_Count) % Subface::PM_Count);
+                    if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_MeshoptDecimate)
+                        method = static_cast<Subface::EProcessingMethod>(key - GLFW_KEY_1);
+                } else if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
+                    if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_Count - Subface::PM_MeshoptDecimate)
+                        method = static_cast<Subface::EProcessingMethod>(key - GLFW_KEY_1 + Subface::PM_MeshoptDecimate);
                 } else {
                     level = key - GLFW_KEY_0;
                 }

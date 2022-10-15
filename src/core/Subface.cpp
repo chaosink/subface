@@ -1372,43 +1372,44 @@ const Subface::ProcessingMethod& Subface::GetProcessingMethod(EProcessingMethod 
         { "LoopSubdivideSmooth",
             [](Subface& sf, int level) {
                 sf.LoopSubdivide(level, false, true);
-            } }, // Key 1
+            } }, // Ctrl + 1
         { "LoopSubdivideSmoothNoLimit",
             [](Subface& sf, int level) {
                 sf.LoopSubdivide(level, false, false);
-            } }, // Key 2
+            } }, // Ctrl + 2
         { "LoopSubdivideFlat",
             [](Subface& sf, int level) {
                 sf.LoopSubdivide(level, true, false);
-            } }, // Key 3
+            } }, // Ctrl + 3
         { "Tessellate4",
             [](Subface& sf, int level) {
                 sf.Tessellate4(level);
-            } }, // Key 4
+            } }, // Ctrl + 4
         { "Tessellate4_1",
             [](Subface& sf, int level) {
                 sf.Tessellate4_1(level);
-            } }, // Key 5
+            } }, // Ctrl + 5
         { "Tessellate3",
             [](Subface& sf, int level) {
                 sf.Tessellate3(level);
-            } }, // Key 6
+            } }, // Ctrl + 6
+
         { "MeshoptDecimate",
             [](Subface& sf, int level) {
                 sf.MeshoptDecimate(level, false);
-            } }, // Key 7
+            } }, // Alt + 1
         { "MeshoptDecimateSloppy",
             [](Subface& sf, int level) {
                 sf.MeshoptDecimate(level, true);
-            } }, // Key 8
+            } }, // Alt + 2
         { "Decimate_ShortestEdge_V0",
             [](Subface& sf, int level) {
                 sf.Decimate(level, false);
-            } }, // Key 9
+            } }, // Alt + 3
         { "Decimate_ShortestEdge_Midpoint",
             [](Subface& sf, int level) {
                 sf.Decimate(level, true);
-            } }, // Key 0
+            } }, // Alt + 4
     };
     return processing_methods[method];
 }
