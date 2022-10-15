@@ -83,7 +83,8 @@ key | function
 
 key | function
 -|-
-`Ctrl` + `1`,`2`,...,`9`,`0` | choose processing methods, `0` for 10, default: `1`
+`Ctrl` + `1`,...,`6` | choose from the subdivision and tessellation methods<br>	1.LoopSubdivideSmooth<br>	2.LoopSubdivideSmoothNoLimit<br>	3.LoopSubdivideFlat<br>	4.Tessellate4<br>	5.Tessellate4_1<br>	6.Tessellate3
+`Alt` + `1`,...,`5` | choose from the decimation methods<br>	1.Decimate_ShortestEdge_V0<br>	2.Decimate_ShortestEdge_Midpoint<br>	3.MeshoptDecimate<br>	4.MeshoptDecimateSloppy<br>	5.SimplygonDecimate
 `0`-`9` | processing level, `0` for the original mesh (default)
 `,`/`.` | decimate one less/more triangle for the decimation methods
 `O` | export the processed mesh as an OBJ file
