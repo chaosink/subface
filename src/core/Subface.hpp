@@ -156,23 +156,27 @@ public:
     //     Attempte to preserve mesh appearance as much as possible.
     // else:
     //     Sacrifice mesh appearance for simplification performance.
-    void MeshoptDecimate(int level, bool sloppy);
     void Decimate(int level, bool midpoint);
+    void MeshoptDecimate(int level, bool sloppy);
     void ExportObj(const std::string& file_name, bool smooth) const;
 
     enum EProcessingMethod {
-        PM_SubdivideSmooth,
-        PM_SubdivideSmoothNoLimit,
-        PM_SubdivideFlat,
-        PM_Tessellate4,
-        PM_Tessellate4_1,
-        PM_Tessellate3,
+        PM_SubdivideSmooth = 0,
+        PM_SubdivideSmoothNoLimit = 1,
+        PM_SubdivideFlat = 2,
+        PM_Tessellate4 = 3,
+        PM_Tessellate4_1 = 4,
+        PM_Tessellate3 = 5,
 
-        PM_MeshoptDecimate,
-        PM_MeshoptDecimateSloppy,
-        PM_Decimate_ShortestEdge_V0,
-        PM_Decimate_ShortestEdge_Midpoint,
-        PM_Count,
+        PM_Decimate_Start = 6,
+
+        PM_Decimate_ShortestEdge_V0 = 6,
+        PM_Decimate_ShortestEdge_Midpoint = 7,
+        PM_MeshoptDecimate = 8,
+        PM_MeshoptDecimateSloppy = 9,
+
+        PM_Decimate_End = 10,
+        PM_Count = 10,
     };
     struct ProcessingMethod {
         std::string name;

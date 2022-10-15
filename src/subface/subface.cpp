@@ -133,11 +133,13 @@ int main(int argc, char* argv[])
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
             if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
-                    if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_MeshoptDecimate)
+                    // Larger complexity: subdivision and tessellation.
+                    if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_Decimate_Start)
                         method = static_cast<Subface::EProcessingMethod>(key - GLFW_KEY_1);
                 } else if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_ALT) == GLFW_PRESS) {
-                    if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_Count - Subface::PM_MeshoptDecimate)
-                        method = static_cast<Subface::EProcessingMethod>(key - GLFW_KEY_1 + Subface::PM_MeshoptDecimate);
+                    // Smaller complexity: decimation.
+                    if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_Decimate_End - Subface::PM_Decimate_Start)
+                        method = static_cast<Subface::EProcessingMethod>(key - GLFW_KEY_1 + Subface::PM_Decimate_Start);
                 } else {
                     level = key - GLFW_KEY_0;
                 }
@@ -147,7 +149,7 @@ int main(int argc, char* argv[])
             method_old = method;
             process(method, level);
         }
-        if (Subface::PM_MeshoptDecimate <= method && method <= Subface::PM_Decimate_ShortestEdge_Midpoint) { // Decimation methods.
+        if (Subface::PM_Decimate_Start <= method && method <= Subface::PM_Decimate_End) { // Decimation methods.
             decimate_one_less_face.Update([&]() {
                 process(method, -1); // `level == -1` means "decimate one less face".
             });

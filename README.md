@@ -27,10 +27,10 @@ Process geometries with one of the following methods:
     4.Tessellate4
     5.Tessellate4_1
     6.Tessellate3
-    7.MeshoptDecimate
-    8.MeshoptDecimateSloppy
-    9.Decimate_ShortestEdge_V0
-    10.Decimate_ShortestEdge_Midpoint
+    7.Decimate_ShortestEdge_V0
+    8.Decimate_ShortestEdge_Midpoint
+    9.MeshoptDecimate
+    10.MeshoptDecimateSloppy
 
 
 Positional arguments:
@@ -271,22 +271,6 @@ key | function
 	</tr>
 	<tr align="center">
 		<th>
-			MeshoptDecimate
-		</th>
-		<th>
-			MeshoptDecimateSloppy
-		</th>
-	</tr>
-	<tr align="center">
-		<td>
-			<img src="result/processing_methods/suzanne.MeshoptDecimate(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
-		</td>
-		<td>
-			<img src="result/processing_methods/suzanne.MeshoptDecimateSloppy(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
-		</td>
-	</tr>
-	<tr align="center">
-		<th>
 			Decimate_ShortestEdge_V0
 		</th>
 		<th>
@@ -299,6 +283,22 @@ key | function
 		</td>
 		<td>
 			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_Midpoint(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+	</tr>
+	<tr align="center">
+		<th>
+			MeshoptDecimate
+		</th>
+		<th>
+			MeshoptDecimateSloppy
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/processing_methods/suzanne.MeshoptDecimate(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.MeshoptDecimateSloppy(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 	</tr>
 </table>

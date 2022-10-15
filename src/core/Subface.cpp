@@ -1015,83 +1015,6 @@ void Subface::Tessellate4_1(int level)
     spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
-template <typename... Args>
-size_t meshopt_simplify_func(bool sloppy, Args... args)
-{
-    if (sloppy)
-        return meshopt_simplifySloppy(args...);
-    else
-        return meshopt_simplify(args...);
-}
-
-void Subface::MeshoptDecimate(int level, bool sloppy)
-{
-    std::string func_name = fmt::format("LoopSubface::MeshoptDecimate(level={}, sloppy={})", level, sloppy);
-    Timer timer(func_name);
-
-    if (level >= 0)
-        level_ = level;
-
-    size_t index_count = origin_indexes_.size();
-    size_t position_count = origin_positions_.size();
-    float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
-    /* Hardcoded threshold table. */
-    // float threshold_table[] { 1.f, 0.5f, 0.25f, 0.125f, 0.0625f, 0.03125f };
-    // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
-    size_t target_index_count = static_cast<size_t>(index_count * threshold);
-    if (level == -1)
-        target_index_count = std::min((result_face_count_ + 1) * 3, index_count);
-    else if (level == -2)
-        target_index_count = std::max(size_t(1), result_face_count_) * 3 - 3;
-    float target_error = 1.f;
-
-    std::vector<uint32_t> result_indexes(index_count);
-    size_t result_index_count = 0;
-    // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
-    if (level == -1) {
-        size_t target_index_count_temp = target_index_count;
-        // Meshopt simplifies index count to a round-down number. To ensure we can increase the face count successfully,
-        // we progressively increase `target_index_count_temp` to get `result_index_count` larger than `target_index_count`.
-        while (true) {
-            result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
-                &origin_positions_[0].x, position_count, sizeof(glm::vec3),
-                target_index_count_temp, target_error);
-            if (result_index_count < target_index_count)
-                target_index_count_temp += 3;
-            else
-                break;
-        }
-    } else {
-        result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
-            &origin_positions_[0].x, position_count, sizeof(glm::vec3),
-            target_index_count, target_error);
-    }
-    result_face_count_ = result_index_count / 3;
-    result_indexes.resize(result_index_count);
-
-    std::vector<glm::vec3> result_positions(position_count);
-    size_t result_position_count = 0;
-    // `result_index_count` may be 0 meaning all the triangles are decimated.
-    if (result_index_count)
-        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
-            &origin_positions_[0].x, position_count, sizeof(glm::vec3));
-    result_positions.resize(result_position_count);
-
-    std::vector<Vertex> vertexes;
-    std::vector<Face> faces;
-    BuildTopology(result_positions, result_indexes, vertexes, faces);
-
-    std::vector<Vertex*> vertexes_base(vertexes.size());
-    std::vector<Face*> faces_base(faces.size());
-    for (size_t i = 0; i < vertexes.size(); i++)
-        vertexes_base[i] = &vertexes[i];
-    for (size_t i = 0; i < faces.size(); i++)
-        faces_base[i] = &faces[i];
-    ComputeNormalsAndPositions(vertexes_base, faces_base);
-
-    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
-}
-
 struct QueueEdge {
     const Vertex* const v[2];
     const float l;
@@ -1336,6 +1259,83 @@ void Subface::Decimate(int level, bool midpoint)
     spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
+template <typename... Args>
+size_t meshopt_simplify_func(bool sloppy, Args... args)
+{
+    if (sloppy)
+        return meshopt_simplifySloppy(args...);
+    else
+        return meshopt_simplify(args...);
+}
+
+void Subface::MeshoptDecimate(int level, bool sloppy)
+{
+    std::string func_name = fmt::format("LoopSubface::MeshoptDecimate(level={}, sloppy={})", level, sloppy);
+    Timer timer(func_name);
+
+    if (level >= 0)
+        level_ = level;
+
+    size_t index_count = origin_indexes_.size();
+    size_t position_count = origin_positions_.size();
+    float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
+    /* Hardcoded threshold table. */
+    // float threshold_table[] { 1.f, 0.5f, 0.25f, 0.125f, 0.0625f, 0.03125f };
+    // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
+    size_t target_index_count = static_cast<size_t>(index_count * threshold);
+    if (level == -1)
+        target_index_count = std::min((result_face_count_ + 1) * 3, index_count);
+    else if (level == -2)
+        target_index_count = std::max(size_t(1), result_face_count_) * 3 - 3;
+    float target_error = 1.f;
+
+    std::vector<uint32_t> result_indexes(index_count);
+    size_t result_index_count = 0;
+    // Use meshopt_simplify_func() as a proxy to prevent duplicated code (writing those many parameters for both functions).
+    if (level == -1) {
+        size_t target_index_count_temp = target_index_count;
+        // Meshopt simplifies index count to a round-down number. To ensure we can increase the face count successfully,
+        // we progressively increase `target_index_count_temp` to get `result_index_count` larger than `target_index_count`.
+        while (true) {
+            result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
+                &origin_positions_[0].x, position_count, sizeof(glm::vec3),
+                target_index_count_temp, target_error);
+            if (result_index_count < target_index_count)
+                target_index_count_temp += 3;
+            else
+                break;
+        }
+    } else {
+        result_index_count = meshopt_simplify_func(sloppy, &result_indexes[0], &origin_indexes_[0], index_count,
+            &origin_positions_[0].x, position_count, sizeof(glm::vec3),
+            target_index_count, target_error);
+    }
+    result_face_count_ = result_index_count / 3;
+    result_indexes.resize(result_index_count);
+
+    std::vector<glm::vec3> result_positions(position_count);
+    size_t result_position_count = 0;
+    // `result_index_count` may be 0 meaning all the triangles are decimated.
+    if (result_index_count)
+        result_position_count = meshopt_optimizeVertexFetch(&result_positions[0].x, &result_indexes[0], result_index_count,
+            &origin_positions_[0].x, position_count, sizeof(glm::vec3));
+    result_positions.resize(result_position_count);
+
+    std::vector<Vertex> vertexes;
+    std::vector<Face> faces;
+    BuildTopology(result_positions, result_indexes, vertexes, faces);
+
+    std::vector<Vertex*> vertexes_base(vertexes.size());
+    std::vector<Face*> faces_base(faces.size());
+    for (size_t i = 0; i < vertexes.size(); i++)
+        vertexes_base[i] = &vertexes[i];
+    for (size_t i = 0; i < faces.size(); i++)
+        faces_base[i] = &faces[i];
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
+
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
+}
+
 void Subface::ExportObj(const std::string& file_name, bool smooth) const
 {
     std::string func_name = fmt::format("LoopSubface::ExportObj(file_name={}, smooth={})", file_name, smooth);
@@ -1394,21 +1394,21 @@ const Subface::ProcessingMethod& Subface::GetProcessingMethod(EProcessingMethod 
                 sf.Tessellate3(level);
             } }, // Ctrl + 6
 
-        { "MeshoptDecimate",
-            [](Subface& sf, int level) {
-                sf.MeshoptDecimate(level, false);
-            } }, // Alt + 1
-        { "MeshoptDecimateSloppy",
-            [](Subface& sf, int level) {
-                sf.MeshoptDecimate(level, true);
-            } }, // Alt + 2
         { "Decimate_ShortestEdge_V0",
             [](Subface& sf, int level) {
                 sf.Decimate(level, false);
-            } }, // Alt + 3
+            } }, // Alt + 1
         { "Decimate_ShortestEdge_Midpoint",
             [](Subface& sf, int level) {
                 sf.Decimate(level, true);
+            } }, // Alt + 2
+        { "MeshoptDecimate",
+            [](Subface& sf, int level) {
+                sf.MeshoptDecimate(level, false);
+            } }, // Alt + 3
+        { "MeshoptDecimateSloppy",
+            [](Subface& sf, int level) {
+                sf.MeshoptDecimate(level, true);
             } }, // Alt + 4
     };
     return processing_methods[method];
