@@ -1,5 +1,7 @@
 # subface
 
+[![build](https://github.com/chaosink/subface/workflows/build/badge.svg)](https://github.com/chaosink/subface/actions/workflows/build.yml)
+
 A collection of triangle mesh subdivision/tessellation/decimation implementations.
 
 # Compiling
