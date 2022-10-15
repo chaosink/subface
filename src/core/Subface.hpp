@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 #ifdef USE_SIMPLYGON
