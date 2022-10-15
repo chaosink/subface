@@ -267,13 +267,13 @@ void Subface::BuildTopology(const std::vector<glm::vec3>& positions, const std::
 
     vertexes.resize(vertex_count);
     // Initialize vertexes' positions.
-    for (int i = 0; i < vertex_count; ++i)
+    for (size_t i = 0; i < vertex_count; ++i)
         vertexes[i].p = positions[i];
 
     faces.resize(face_count);
     // Initialize faces' vertexes and vertexes' `start_face`.
-    for (int i = 0; i < face_count; ++i)
-        for (int j = 0; j < 3; j++) {
+    for (size_t i = 0; i < face_count; ++i)
+        for (size_t j = 0; j < 3; j++) {
             faces[i].v[j] = &vertexes[indexes[i * 3 + j]];
             // `start_face` of the same vertex may be updated multiple times.
             vertexes[indexes[i * 3 + j]].start_face = &faces[i];
@@ -331,10 +331,10 @@ float Subface::LoopGamma(int valence)
 
 glm::vec3 Subface::WeightOneRing(Vertex* v, float beta)
 {
-    int valence = v->valence;
+    size_t valence = v->valence;
     std::vector<const Vertex*> ring = v->OneRing();
     glm::vec3 p = (1 - valence * beta) * v->p;
-    for (int i = 0; i < valence; ++i)
+    for (size_t i = 0; i < valence; ++i)
         p += beta * ring[i]->p;
     return p;
 }
@@ -350,14 +350,14 @@ void Subface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes, c
 {
     // Compute vertexes' smooth normals.
     std::vector<glm::vec3> smooth_normals(vertexes.size());
-    for (int vi = 0; vi < vertexes.size(); ++vi) {
+    for (size_t vi = 0; vi < vertexes.size(); ++vi) {
         const Vertex* v = vertexes[vi];
 
         glm::vec3 S(0, 0, 0), T(0, 0, 0);
         size_t valence = v->valence;
         std::vector<const Vertex*> ring = v->OneRing();
         if (!v->boundary) {
-            for (int i = 0; i < valence; ++i) {
+            for (size_t i = 0; i < valence; ++i) {
                 T += std::cos(2.f * PI * i / valence) * ring[i]->p;
                 S += std::sin(2.f * PI * i / valence) * ring[i]->p;
             }
@@ -372,7 +372,7 @@ void Subface::ComputeNormalsAndPositions(const std::vector<Vertex*>& vertexes, c
             else {
                 float theta = PI / float(valence - 1);
                 T = std::sin(theta) * (ring[0]->p + ring[valence - 1]->p);
-                for (int i = 1; i < valence - 1; ++i) {
+                for (size_t i = 1; i < valence - 1; ++i) {
                     float weight = (std::cos(theta) * 2.f - 2.f) * std::sin(theta * i);
                     T += ring[i]->p * weight;
                 }
@@ -1053,12 +1053,11 @@ struct QueueEdge {
     {
         const std::array<void*, 2>& a = *reinterpret_cast<const std::array<void*, 2>*>(v);
         const std::array<void*, 2>& b = *reinterpret_cast<const std::array<void*, 2>*>(qe.v);
-        return l < qe.l || l == qe.l && a < b;
+        return l < qe.l || (l == qe.l && a < b);
     }
 };
 
-bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::set<QueueEdge>& queue, size_t& decimate_face_count,
-    size_t target_face_count, bool round_down, bool midpoint)
+bool CollapseEdge(std::set<QueueEdge>& queue, size_t& decimate_face_count, size_t target_face_count, bool round_down, bool midpoint)
 {
     const QueueEdge collapse_e = *queue.begin();
 
@@ -1165,7 +1164,7 @@ bool CollapseEdge(std::vector<Vertex>& vertexes, std::vector<Face>& faces, std::
     auto f_it = std::find(collapse_f.begin(), collapse_f.end(), v0->start_face);
     if (f_it != collapse_f.end()) {
         v0->start_face = nullptr;
-        for (int i = 0; i < collapse_f.size(); ++i)
+        for (size_t i = 0; i < collapse_f.size(); ++i)
             if (collapse_f[i] && (v0->start_face == nullptr || v0->start_face->children[0])) {
                 v0->start_face = collapse_f[i]->PrevNeighbor(collapse_f_v[i]);
                 if (v0->start_face == nullptr || v0->start_face->children[0])
@@ -1242,7 +1241,6 @@ void Subface::Decimate(int level, bool midpoint)
     std::vector<Vertex> vertexes;
     std::vector<Face> faces;
     BuildTopology(origin_positions_, origin_indexes_, vertexes, faces);
-    size_t vertex_count = vertexes_.size();
     size_t face_count = faces_.size();
 
     float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
@@ -1261,11 +1259,11 @@ void Subface::Decimate(int level, bool midpoint)
     if (level == -1) {
         // An edge collapse may decimate more than 1 face (2 usually, 1 for border edges, >2 for corner cases).
         // Use round up mode (with the last parameter `round_down==false`) here to ensure we can increase the face count successfully.
-        while (decimate_face_count > target_face_count && CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, false, midpoint))
+        while (decimate_face_count > target_face_count && CollapseEdge(queue, decimate_face_count, target_face_count, false, midpoint))
             ;
     } else {
         while (decimate_face_count > target_face_count)
-            CollapseEdge(vertexes, faces, queue, decimate_face_count, target_face_count, true, midpoint);
+            CollapseEdge(queue, decimate_face_count, target_face_count, true, midpoint);
     }
     result_face_count_ = decimate_face_count;
 
@@ -1370,12 +1368,12 @@ void Subface::SimplygonDecimate(int level)
 
     size_t index_count = origin_indexes_.size();
     size_t face_count = index_count / 3;
-    size_t position_count = origin_positions_.size();
+    [[maybe_unused]] size_t position_count = origin_positions_.size();
     float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
     /* Hardcoded threshold table. */
     // float threshold_table[] { 1.f, 0.5f, 0.25f, 0.125f, 0.0625f, 0.03125f };
     // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
-    size_t target_face_count = static_cast<size_t>(face_count * threshold);
+    [[maybe_unused]] size_t target_face_count = static_cast<size_t>(face_count * threshold);
     if (level == -1)
         target_face_count = std::min(result_face_count_ + 2, face_count); // Add 2 faces.
     else if (level == -2)

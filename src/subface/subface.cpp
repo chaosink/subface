@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
         // clang-format on
 
         for (int key = GLFW_KEY_0; key <= GLFW_KEY_9; ++key)
-            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS)
+            if (glfwGetKey(ogl.window(), key) == GLFW_PRESS) {
                 if (glfwGetKey(ogl.window(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(ogl.window(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS) {
                     // Larger complexity: subdivision and tessellation.
                     if (GLFW_KEY_1 <= key && key < GLFW_KEY_1 + Subface::PM_Decimate_Start)
@@ -143,6 +143,7 @@ int main(int argc, char* argv[])
                 } else {
                     level = key - GLFW_KEY_0;
                 }
+            }
 
         if (level != level_old || method != method_old) {
             level_old = level;
