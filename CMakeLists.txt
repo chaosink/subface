@@ -3,15 +3,14 @@ project(subface LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 if(MSVC)
-	add_definitions(-DCONSTEXPR=const -DNOMINMAX)
+	add_definitions(-DNOMINMAX)
 	# For GLEW shared library.
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4281")
 else()
-	add_definitions(-DCONSTEXPR=constexpr)
-	set(CXX_WARNINGS "-Wall -Wextra -Wpointer-arith -Wcast-align -fstrict-aliasing -Wno-comment")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_WARNINGS} -fvisibility-inlines-hidden -O3")
+	set(CXX_WARNINGS "-Wall -Wextra -Wpointer-arith -Wcast-align -Wno-comment")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_WARNINGS} -fvisibility-inlines-hidden -fstrict-aliasing")
 
-	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 endif()
 
