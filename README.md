@@ -1,6 +1,6 @@
 # subface
 
-A collection of triangle subdivision/tessellation/decimation implementations.
+A collection of triangle mesh subdivision/tessellation/decimation implementations.
 
 # Compiling
 
@@ -15,7 +15,7 @@ cmake --build . --config Debug # Or Release
 
 # Usage
 
-* command line
+* Command line
 
 ```
 Usage: subface [-h] [--cmd] [--export_obj] [--save_png] [--smooth] [--fix_camera] [--cull] [--transparent] [--render VAR] [--method VAR] [--level VAR] OBJ_file_path
@@ -51,7 +51,7 @@ Optional arguments:
   -l, --level           processing level [default: 0]
 ```
 
-* rendering
+* Rendering
 
 key | function
 -|-
@@ -65,7 +65,7 @@ key | function
 `F2` | save the screenshot as a PNG file
 `ESC` | exit
 
-* camera controlling
+* Camera controlling
 
 key | function
 -|-
@@ -78,7 +78,7 @@ key | function
 `mouse right button` | change camera direction
 `mouse scroll wheel` | adjust field of view
 
-* processing
+* Triangle mesh processing
 
 key | function
 -|-
@@ -89,7 +89,7 @@ key | function
 
 # Results
 
-* rendering modes
+* Rendering modes
 
 <table>
 	<!-- FacesWireframe, FacesOnly -->
@@ -128,7 +128,7 @@ key | function
 	</tr>
 </table>
 
-* 1.LoopSubdivideSmooth, Normal_flat vs Normal_smooth
+* LoopSubdivideSmooth, Normal_flat vs Normal_smooth
 
 <table>
 	<!-- original mesh -->
@@ -218,7 +218,7 @@ key | function
 	</tr>
 </table>
 
-* processing methods, level=2
+* Processing methods: subdivision and tessellation methods, level=2
 
 <table>
 	<tr align="center">
@@ -269,20 +269,25 @@ key | function
 			<img src="result/processing_methods/suzanne.Tessellate3(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 	</tr>
+</table>
+
+* Processing methods: decimation methods, level=5 (decimation ratio=50%)
+
+<table>
 	<tr align="center">
-		<th>
+		<th width="50%">
 			Decimate_ShortestEdge_V0
 		</th>
-		<th>
+		<th width="50%">
 			Decimate_ShortestEdge_Midpoint
 		</th>
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_V0(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_V0(level=5).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 		<td>
-			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_Midpoint(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+			<img src="result/processing_methods/suzanne.Decimate_ShortestEdge_Midpoint(level=5).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 	</tr>
 	<tr align="center">
@@ -295,10 +300,10 @@ key | function
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="result/processing_methods/suzanne.MeshoptDecimate(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+			<img src="result/processing_methods/suzanne.MeshoptDecimate(level=5).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 		<td>
-			<img src="result/processing_methods/suzanne.MeshoptDecimateSloppy(level=2).Normal_flat.FacesWireframe.Cull_false.png"></img>
+			<img src="result/processing_methods/suzanne.MeshoptDecimateSloppy(level=5).Normal_flat.FacesWireframe.Cull_false.png"></img>
 		</td>
 	</tr>
 </table>

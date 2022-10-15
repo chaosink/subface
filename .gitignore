@@ -32,18 +32,18 @@
 *.app
 
 # Build
-/build*
+/build*/
 
 # CLion
-/cmake-build-debug
-/cmake-build-release
-/.idea
+/cmake-build-debug/
+/cmake-build-release/
+/.idea/
 
 # Release
-/release
+/release/
 
 # Model
-/model
+/model/
 
 # GLEW
 /src/thirdparty/glew-2.2.0.zip
