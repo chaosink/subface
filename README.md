@@ -31,6 +31,7 @@ Process geometries with one of the following methods:
     8.Decimate_ShortestEdge_Midpoint
     9.MeshoptDecimate
     10.MeshoptDecimateSloppy
+    11.SimplygonDecimate
 
 
 Positional arguments:
@@ -276,9 +277,25 @@ key | function
 <table>
 	<tr align="center">
 		<th width="50%">
-			Decimate_ShortestEdge_V0
+			original mesh
 		</th>
 		<th width="50%">
+			SimplygonDecimate
+		</th>
+	</tr>
+	<tr align="center">
+		<td>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.origin.Normal_flat.FacesWireframe.Cull_true.png"></img>
+		</td>
+		<td>
+			<img src="result/processing_methods/suzanne.SimplygonDecimate(level=5).Normal_flat.FacesWireframe.Cull_false.png"></img>
+		</td>
+	</tr>
+	<tr align="center">
+		<th>
+			Decimate_ShortestEdge_V0
+		</th>
+		<th>
 			Decimate_ShortestEdge_Midpoint
 		</th>
 	</tr>

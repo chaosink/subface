@@ -25,6 +25,20 @@ include_directories(
 	${OPENGL_INCLUDE_DIR}
 )
 
+# Simplygon
+if(WIN32)
+	set(SIMPLYGON_10_PATH $ENV{SIMPLYGON_10_PATH} CACHE PATH "Path to Simplygon 10 SDK")
+	if("${SIMPLYGON_10_PATH}" STREQUAL "")
+		message(WARNING "SIMPLYGON_10_PATH is not set. Disabling decimation with Simplygon.")
+	else()
+		set(SIMPLYGON_10_LOADER "${SIMPLYGON_10_PATH}/SimplygonLoader.cpp")
+		include_directories("${SIMPLYGON_10_PATH}")
+		add_compile_definitions(USE_SIMPLYGON)
+	endif()
+else()
+	message(WARNING "Simplygon only supports Windows. Disabling decimation with Simplygon.")
+endif()
+
 add_library(meshoptimizer
 	src/thirdparty/meshoptimizer/simplifier.cpp
 	src/thirdparty/meshoptimizer/vfetchoptimizer.cpp
@@ -32,6 +46,7 @@ add_library(meshoptimizer
 add_library(core
 	src/core/Subface.cpp
 	src/utility/Timer.cpp
+	${SIMPLYGON_10_LOADER}
 )
 target_link_libraries(core PRIVATE
 	spdlog::spdlog

@@ -235,6 +235,30 @@ bool Face::OppositeNeighbor(int k) const
     return fn ? fn->VertexId(v[NEXT(k)]) == NEXT(fn->VertexId(v[k])) : false;
 }
 
+Subface::Subface()
+{
+    std::string func_name = fmt::format("LoopSubface::Subface()");
+    Timer timer(func_name);
+
+#ifdef USE_SIMPLYGON
+    // Initialize the SDK.
+    Simplygon::EErrorCodes init_error_code = Simplygon::Initialize(&simplygon_);
+    // Make sure the SDK initialized correctly.
+    if (init_error_code != Simplygon::EErrorCodes::NoError) {
+        assert(simplygon_ == nullptr);
+        spdlog::error("{}: Failed to initialize Simplygon: ErrorCode{}!", func_name, init_error_code);
+    }
+#endif
+}
+
+Subface::~Subface()
+{
+#ifdef USE_SIMPLYGON
+    // Deinitialize the Simplygon SDK.
+    Simplygon::Deinitialize(simplygon_);
+#endif
+}
+
 void Subface::BuildTopology(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indexes,
     std::vector<Vertex>& vertexes, std::vector<Face>& faces)
 {
@@ -1336,6 +1360,91 @@ void Subface::MeshoptDecimate(int level, bool sloppy)
     spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
 }
 
+void Subface::SimplygonDecimate(int level)
+{
+    std::string func_name = fmt::format("LoopSubface::SimplygonDecimate(level={})", level);
+    Timer timer(func_name);
+
+    if (level >= 0)
+        level_ = level;
+
+    size_t index_count = origin_indexes_.size();
+    size_t face_count = index_count / 3;
+    size_t position_count = origin_positions_.size();
+    float threshold = (1 <= level_ && level_ <= 9) ? (1.f - level_ * 0.1f) : 1.f;
+    /* Hardcoded threshold table. */
+    // float threshold_table[] { 1.f, 0.5f, 0.25f, 0.125f, 0.0625f, 0.03125f };
+    // threshold = threshold_table[level % (sizeof(threshold_table) / sizeof(float))];
+    size_t target_face_count = static_cast<size_t>(face_count * threshold);
+    if (level == -1)
+        target_face_count = std::min(result_face_count_ + 2, face_count); // Add 2 faces.
+    else if (level == -2)
+        target_face_count = std::max(size_t(1), result_face_count_) - 1;
+
+    std::vector<glm::vec3> result_positions;
+    std::vector<uint32_t> result_indexes;
+
+#ifdef USE_SIMPLYGON
+    if (simplygon_) {
+        // Create the Geometry. All geometry data will be loaded into this object.
+        Simplygon::spGeometryData sg_geometry_data = simplygon_->CreateGeometryData();
+        // Set vertex- and triangle-counts for the Geometry.
+        // NOTE: The number of vertices and triangles has to be set before vertex- and triangle-data is loaded into the GeometryData.
+        sg_geometry_data->SetVertexCount(static_cast<uint32_t>(position_count));
+        sg_geometry_data->SetTriangleCount(static_cast<uint32_t>(face_count));
+        // Array with vertex-coordinates. Will contain 3 real-values for each vertex in the geometry.
+        Simplygon::spRealArray sg_coords = sg_geometry_data->GetCoords();
+        // Array with triangle-data. Will contain 3 ids for each corner of each triangle, so the triangles know what vertices to use.
+        Simplygon::spRidArray sg_vertex_ids = sg_geometry_data->GetVertexIds();
+        // Add vertex-coordinates array to the Geometry.
+        sg_coords->SetData(&origin_positions_[0].x, static_cast<uint32_t>(position_count * 3));
+        // Add triangles to the Geometry. Each triangle-corner contains the id for the vertex that corneruses.
+        sg_vertex_ids->SetData(reinterpret_cast<int*>(&origin_indexes_[0]), static_cast<uint32_t>(index_count));
+
+        // Create a scene and a SceneMesh node with the geometry.
+        Simplygon::spScene sg_scene = simplygon_->CreateScene();
+        Simplygon::spSceneMesh sg_scene_mesh = simplygon_->CreateSceneMesh();
+        sg_scene_mesh->SetGeometry(sg_geometry_data);
+        sg_scene->GetRootNode()->AddChild(sg_scene_mesh);
+
+        // Create the reduction processor.
+        Simplygon::spReductionProcessor sg_reduction_processor = simplygon_->CreateReductionProcessor();
+        sg_reduction_processor->SetScene(sg_scene);
+        Simplygon::spReductionSettings sg_reduction_settings = sg_reduction_processor->GetReductionSettings();
+        sg_reduction_settings->SetReductionTargets(Simplygon::EStopCondition::All, false, true, false, false);
+        sg_reduction_settings->SetReductionTargetTriangleCount(static_cast<uint32_t>(target_face_count));
+        sg_reduction_processor->RunProcessing();
+
+        Simplygon::spRealData sg_coords_decimate = sg_geometry_data->GetCoords().GetData();
+        const glm::vec3* ptr_position = reinterpret_cast<const glm::vec3*>(sg_coords_decimate.Data());
+        result_positions = std::vector<glm::vec3>(ptr_position, ptr_position + sg_coords_decimate.GetItemCount() / 3);
+        Simplygon::spRidData sg_vertex_ids_decimate = sg_geometry_data->GetVertexIds().GetData();
+        const uint32_t* ptr_index = reinterpret_cast<const uint32_t*>(sg_vertex_ids_decimate.Data());
+        result_indexes = std::vector<uint32_t>(ptr_index, ptr_index + sg_vertex_ids_decimate.GetItemCount());
+    } else {
+        spdlog::error("{}: Cannot use Simplygon due to the initialization failure!", func_name);
+    }
+#else
+    spdlog::error("{}: Cannot use Simplygon due to the library finding failure!", func_name);
+#endif
+
+    result_face_count_ = result_indexes.size() / 3;
+
+    std::vector<Vertex> vertexes;
+    std::vector<Face> faces;
+    BuildTopology(result_positions, result_indexes, vertexes, faces);
+
+    std::vector<Vertex*> vertexes_base(vertexes.size());
+    std::vector<Face*> faces_base(faces.size());
+    for (size_t i = 0; i < vertexes.size(); i++)
+        vertexes_base[i] = &vertexes[i];
+    for (size_t i = 0; i < faces.size(); i++)
+        faces_base[i] = &faces[i];
+    ComputeNormalsAndPositions(vertexes_base, faces_base);
+
+    spdlog::info("{}: {} triangles, {} vertexes", func_name, faces_base.size(), vertexes_base.size());
+}
+
 void Subface::ExportObj(const std::string& file_name, bool smooth) const
 {
     std::string func_name = fmt::format("LoopSubface::ExportObj(file_name={}, smooth={})", file_name, smooth);
@@ -1410,6 +1519,10 @@ const Subface::ProcessingMethod& Subface::GetProcessingMethod(EProcessingMethod 
             [](Subface& sf, int level) {
                 sf.MeshoptDecimate(level, true);
             } }, // Alt + 4
+        { "SimplygonDecimate",
+            [](Subface& sf, int level) {
+                sf.SimplygonDecimate(level);
+            } }, // Alt + 5
     };
     return processing_methods[method];
 }

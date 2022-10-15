@@ -5,6 +5,9 @@
 #include <string>
 
 #include <glm/glm.hpp>
+#ifdef USE_SIMPLYGON
+#include <SimplygonLoader.h>
+#endif
 
 namespace subface {
 
@@ -126,6 +129,10 @@ class Subface {
     std::vector<int> smooth_normal_indexes_;
     std::vector<int> flat_normal_indexes_;
 
+#ifdef USE_SIMPLYGON
+    Simplygon::ISimplygon* simplygon_ = nullptr;
+#endif
+
     // Only for non-boundary vertexes.
     static float Beta(int valence);
     // Only for non-boundary vertexes.
@@ -140,6 +147,8 @@ class Subface {
     bool CheckLevel(const std::string& func_name, int level, int base);
 
 public:
+    Subface();
+    ~Subface();
     void BuildTopology(const std::vector<glm::vec3>& vertexes, const std::vector<uint32_t>& indexes);
     // Same as Tessellate4(int level) if `flat==true`.
     // `compute_limit` matters only when `flat==false`.
@@ -158,6 +167,7 @@ public:
     //     Sacrifice mesh appearance for simplification performance.
     void Decimate(int level, bool midpoint);
     void MeshoptDecimate(int level, bool sloppy);
+    void SimplygonDecimate(int level);
     void ExportObj(const std::string& file_name, bool smooth) const;
 
     enum EProcessingMethod {
@@ -174,9 +184,10 @@ public:
         PM_Decimate_ShortestEdge_Midpoint = 7,
         PM_MeshoptDecimate = 8,
         PM_MeshoptDecimateSloppy = 9,
+        PM_SimplygonDecimate = 10,
 
-        PM_Decimate_End = 10,
-        PM_Count = 10,
+        PM_Decimate_End = 11,
+        PM_Count = 11,
     };
     struct ProcessingMethod {
         std::string name;
