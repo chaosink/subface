@@ -103,10 +103,10 @@ key | function
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.FacesWireframe.Cull_true.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.origin.Normal_flat.FacesWireframe.Cull_true.png"></img>
 		</td>
 		<td>
-			<img src="result/rendering_modes/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.FacesOnly.Cull_true.png"></img>
+			<img src="result/rendering_modes/suzanne.origin.Normal_flat.FacesOnly.Cull_true.png"></img>
 		</td>
 	</tr>
 	<!-- WireframeOnly with face culling, WireframeOnly without face culling -->
@@ -120,10 +120,10 @@ key | function
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="result/rendering_modes/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.WireframeOnly.Cull_false.png"></img>
+			<img src="result/rendering_modes/suzanne.origin.Normal_flat.WireframeOnly.Cull_false.png"></img>
 		</td>
 		<td>
-			<img src="result/rendering_modes/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.WireframeOnly.Cull_true.png"></img>
+			<img src="result/rendering_modes/suzanne.origin.Normal_flat.WireframeOnly.Cull_true.png"></img>
 		</td>
 	</tr>
 </table>
@@ -142,10 +142,10 @@ key | function
 	</tr>
 	<tr align="center">
 		<td>
-			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=0).Normal_flat.FacesWireframe.Cull_true.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.origin.Normal_flat.FacesWireframe.Cull_true.png"></img>
 		</td>
 		<td>
-			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.LoopSubdivideSmooth(level=0).Normal_smooth.FacesWireframe.Cull_true.png"></img>
+			<img src="result/LoopSubdivideSmooth(level=n)/suzanne.origin.Normal_smooth.FacesWireframe.Cull_true.png"></img>
 		</td>
 	</tr>
 	<!-- level=1 -->
