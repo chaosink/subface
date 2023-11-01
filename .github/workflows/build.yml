@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           if [[ "${{ runner.os }}" == "Windows" ]] ; then
-            cmake --build . --config ${{ matrix.build_type }} --target ALL_BUILD --verbose
+            cmake --build . --config ${{ matrix.build_type }} --target ALL_BUILD --verbose -j
           else
             cmake --build . --target all --verbose -j
           fi
