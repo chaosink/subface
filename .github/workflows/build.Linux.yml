@@ -1,4 +1,4 @@
-name: Build
+name: Build on Linux
 
 on: [push, pull_request]
 
@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
         build_type: [Debug, Release]
     env:
       build_dir: "build"

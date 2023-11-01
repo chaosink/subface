@@ -1,0 +1,42 @@
+name: Build on Windows
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }} ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Debug, Release]
+    env:
+      build_dir: "build"
+    steps:
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]] ; then
+            sudo apt-get update && sudo apt-get install libglu1-mesa-dev xorg-dev
+          fi
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: CMake
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]] ; then
+            cmake . -B ${{ env.build_dir }}
+          else
+            cmake . -B ${{ env.build_dir }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          fi
+      - name: Build
+        working-directory: ${{ env.build_dir }}
+        shell: bash
+        run: |
+          if [[ "${{ runner.os }}" == "Windows" ]] ; then
+            cmake --build . --config ${{ matrix.build_type }} --target ALL_BUILD --verbose -j
+          else
+            cmake --build . --target all --verbose -j
+          fi
